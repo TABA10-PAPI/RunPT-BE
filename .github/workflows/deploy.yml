@@ -18,6 +18,7 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
 
+
       - name: Build with Gradle
         working-directory: ./back
         run: |
