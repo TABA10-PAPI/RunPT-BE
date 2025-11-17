@@ -33,7 +33,7 @@ jobs:
           key: ${{ secrets.EC2_KEY }}
           source: "back/build/libs/*.jar"
           target: "/home/${{ secrets.EC2_USER }}/app/"
-          timeout: 120
+          timeout: 120s
 
       - name: Restart app on EC2
         uses: appleboy/ssh-action@v1.1.0
