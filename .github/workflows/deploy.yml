@@ -35,7 +35,8 @@ jobs:
           source: "back/build/libs/back-0.0.1-SNAPSHOT.jar"
           target: "/home/${{ secrets.EC2_USER }}/app/"
           timeout: 200s
-          command_timeout: 200s
+          
+          
 
       - name: Restart app on EC2
         uses: appleboy/ssh-action@v1.1.0
