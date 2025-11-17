@@ -25,6 +25,18 @@ jobs:
           chmod +x ./gradlew
           ./gradlew clean build -x test
           ls -l build/libs/
+      
+      - name: Test SCP
+        run: echo "hello" > test.txt
+      - uses: appleboy/scp-action@v0.1.5
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_KEY }}
+          source: "test.txt"
+          target: "/home/${{ secrets.EC2_USER }}/app/"
+          timeout: 60s
+
 
       - name: Copy jar to EC2
         uses: appleboy/scp-action@v0.1.5
