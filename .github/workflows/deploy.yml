@@ -51,5 +51,6 @@ jobs:
             # 기존 프로세스 종료
             pkill -f "java -jar" || true
 
+            
             # 새 버전 실행
             nohup java -jar $JAR_NAME > app.log 2>&1 &
