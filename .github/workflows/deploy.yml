@@ -43,11 +43,11 @@ jobs:
           ssh -o StrictHostKeyChecking=no -i key.pem $USER@$HOST "echo 'Connected to EC2'"
 
           # 📦 파일 전송 (JAR + restart.sh)
-          scp -o StrictHostKeyChecking=no -i key.pem back/build/libs/back-0.0.1-SNAPSHOT.jar $USER@$HOST:/home/app/
-          scp -o StrictHostKeyChecking=no -i key.pem back/script/restart.sh $USER@$HOST:/home/app/
+          scp -o StrictHostKeyChecking=no -i key.pem back/build/libs/back-0.0.1-SNAPSHOT.jar $USER@$HOST:/home/ubuntu/app/
+          scp -o StrictHostKeyChecking=no -i key.pem back/script/restart.sh $USER@$HOST:/home/ubuntu/app/
 
           # 🔧 restart.sh 실행 가능 권한 부여
-          ssh -o StrictHostKeyChecking=no -i key.pem $USER@$HOST "chmod +x /home/app/restart.sh"
+          ssh -o StrictHostKeyChecking=no -i key.pem $USER@$HOST "chmod +x /home/ubuntu/app/restart.sh"
 
           # 🚀 서버 재시작 실행
-          ssh -o StrictHostKeyChecking=no -i key.pem $USER@$HOST "/home/app/restart.sh"
+          ssh -o StrictHostKeyChecking=no -i key.pem $USER@$HOST "/home/ubuntu/app/restart.sh"
