@@ -38,15 +38,14 @@ jobs:
           timeout: 60s
 
 
-      - name: Copy jar to EC2
-        uses: appleboy/scp-action@v0.1.5
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USER }}
-          key: ${{ secrets.EC2_KEY }}
-          source: "back/build/libs/back-0.0.1-SNAPSHOT.jar"
-          target: "/home/${{ secrets.EC2_USER }}/app/"
-          timeout: 200s
+      - name: Copy JAR to EC2 via SCP
+        run: |
+          echo "${{ secrets.EC2_KEY }}" > key.pem
+          chmod 600 key.pem
+          scp -o StrictHostKeyChecking=no \
+              -i key.pem \
+              back/build/libs/back-0.0.1-SNAPSHOT.jar \
+              ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/home/${{ secrets.EC2_USER }}/app/
           
           
 
@@ -58,7 +57,7 @@ jobs:
           key: ${{ secrets.EC2_KEY }}
           script: |
             cd ~/app
-            JAR_NAME=$(ls *.jar)
+            JAR_NAME=back-0.0.1-SNAPSHOT.jar
             echo "Running: $JAR_NAME"
 
             # 기존 프로세스 종료
