@@ -1,7 +1,7 @@
 #!/bin/bash
 
 JAR_NAME=back-0.0.1-SNAPSHOT.jar
-APP_DIR=/home/ubuntu/schoopy
+APP_DIR=/home/ubuntu/app
 
 cd $APP_DIR || { echo "Failed to cd to $APP_DIR"; exit 1; }
 
