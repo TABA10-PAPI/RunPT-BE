@@ -1,6 +1,5 @@
 name: Deploy Spring Boot to EC2 (Ubuntu)
 
-
 on:
   push:
     branches: [ "main" ]
@@ -27,7 +26,7 @@ jobs:
 
       - name: Copy JAR to EC2 via SCP safely
         run: |
-          cat << 'EOF' > key.pem
+          cat > key.pem << 'EOF'
           ${{ secrets.EC2_KEY }}
           EOF
           chmod 600 key.pem
