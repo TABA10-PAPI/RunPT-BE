@@ -4,7 +4,6 @@ on:
   push:
     branches: [ "main" ]
 
-
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -24,20 +23,19 @@ jobs:
         run: |
           chmod +x ./gradlew
           ./gradlew clean build -x test
-         
-
 
       - name: Copy JAR to EC2 via SCP safely
         run: |
-          echo "${{ secrets.EC2_KEY }}" > key.pem
+          cat << 'EOF' > key.pem
+          ${{ secrets.EC2_KEY }}
+          EOF
           chmod 600 key.pem
-          scp -q -o StrictHostKeyChecking=no \
+
+          scp -o StrictHostKeyChecking=no \
               -o LogLevel=ERROR \
               -i key.pem \
-              back/build/libs/back-0.0.1-SNAPSHOT.jar \
+              ${{ github.workspace }}/back/build/libs/back-0.0.1-SNAPSHOT.jar \
               ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/home/${{ secrets.EC2_USER }}/app/
-          
-          
 
       - name: Restart app on EC2
         uses: appleboy/ssh-action@v1.1.0
@@ -48,11 +46,9 @@ jobs:
           script: |
             cd ~/app
             JAR_NAME=back-0.0.1-SNAPSHOT.jar
-            
 
-            # 기존 프로세스 종료
-            pkill -f "java -jar" || true
+            # 기존 프로세스 안전하게 종료
+            pkill -f $JAR_NAME || true
 
-            
             # 새 버전 실행
-            nohup java -jar $JAR_NAME > app.log 2>&1 &
+            nohup java -jar $JAR_NAME --spring.profiles.active=prod > app.log 2>&1 &
