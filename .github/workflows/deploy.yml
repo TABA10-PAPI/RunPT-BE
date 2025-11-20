@@ -24,7 +24,7 @@ jobs:
         run: |
           chmod +x ./gradlew
           ./gradlew clean build -x test
-          ls -l build/libs/
+         
 
 
       - name: Copy JAR to EC2 via SCP safely
