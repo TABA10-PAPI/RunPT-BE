@@ -48,7 +48,7 @@ jobs:
           script: |
             cd ~/app
             JAR_NAME=back-0.0.1-SNAPSHOT.jar
-            echo "Running: $JAR_NAME"
+            
 
             # 기존 프로세스 종료
             pkill -f "java -jar" || true
