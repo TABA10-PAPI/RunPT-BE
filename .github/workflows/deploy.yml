@@ -9,46 +9,44 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout source
+      # 1. 소스코드 체크아웃
+      - name: Checkout repository
         uses: actions/checkout@v3
 
+      # 2. JDK 설치
       - name: Set up JDK
         uses: actions/setup-java@v3
         with:
           java-version: '21'
           distribution: 'temurin'
 
-      - name: Build with Gradle
+      # 3. Spring Boot 빌드
+      - name: Build Spring Boot Project
         working-directory: ./back
         run: |
-          chmod +x ./gradlew
+          chmod +x gradlew
           ./gradlew clean build -x test
 
-      - name: Copy JAR to EC2 via SCP safely
+      # 4. EC2에 JAR 및 스크립트 전송 + 실행
+      - name: Deploy to EC2
+        env:
+          HOST: ${{ secrets.EC2_HOST }}
+          USER: ${{ secrets.EC2_USER }}
+          PRIVATE_KEY: ${{ secrets.EC2_KEY }}
         run: |
-          cat > key.pem << 'EOF'
-          ${{ secrets.EC2_KEY }}
-          EOF
+          # 🔐 SSH Key 생성
+          echo "$PRIVATE_KEY" > key.pem
           chmod 600 key.pem
 
-          scp -o StrictHostKeyChecking=no \
-              -o LogLevel=ERROR \
-              -i key.pem \
-              ${{ github.workspace }}/back/build/libs/back-0.0.1-SNAPSHOT.jar \
-              ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/home/${{ secrets.EC2_USER }}/app/
+          # 🟢 EC2 연결 확인
+          ssh -o StrictHostKeyChecking=no -i key.pem $USER@$HOST "echo 'Connected to EC2'"
 
-      - name: Restart app on EC2
-        uses: appleboy/ssh-action@v1.1.0
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USER }}
-          key: ${{ secrets.EC2_KEY }}
-          script: |
-            cd ~/app
-            JAR_NAME=back-0.0.1-SNAPSHOT.jar
+          # 📦 파일 전송 (JAR + restart.sh)
+          scp -o StrictHostKeyChecking=no -i key.pem back/build/libs/back-0.0.1-SNAPSHOT.jar $USER@$HOST:/home/app/
+          scp -o StrictHostKeyChecking=no -i key.pem back/script/restart.sh $USER@$HOST:/home/app/
 
-            # 기존 프로세스 안전하게 종료
-            pkill -f $JAR_NAME || true
+          # 🔧 restart.sh 실행 가능 권한 부여
+          ssh -o StrictHostKeyChecking=no -i key.pem $USER@$HOST "chmod +x /home/app/restart.sh"
 
-            # 새 버전 실행
-            nohup java -jar $JAR_NAME --spring.profiles.active=prod > app.log 2>&1 &
+          # 🚀 서버 재시작 실행
+          ssh -o StrictHostKeyChecking=no -i key.pem $USER@$HOST "/home/app/restart.sh"
