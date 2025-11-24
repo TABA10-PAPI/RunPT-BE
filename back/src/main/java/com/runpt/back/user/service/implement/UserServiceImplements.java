@@ -39,9 +39,6 @@ public class UserServiceImplements implements UserService {
     private final RunningSessionRepository runningSessionRepository;
     private final KakaoOauthHelper kakaoOauthHelper;
 
-    @Value("${spring.security.oauth2.client.registration.kakao.redirect-uri}")
-    private String KAKAO_REDIRECT_URL;
-
     @Override
     public ResponseEntity<? super KakaoLoginResponseDto> kakaoLogin(KakaoLoginRequestDto dto) {
         long uid = 0;
