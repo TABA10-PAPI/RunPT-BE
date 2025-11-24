@@ -22,8 +22,6 @@ public class BatteryEntity {
 
     private float battery;
 
-    private float stress;
-
     @Column(columnDefinition = "TEXT")
     private String recommendationsJson;
 }

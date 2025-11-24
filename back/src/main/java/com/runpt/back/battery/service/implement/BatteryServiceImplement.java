@@ -46,13 +46,11 @@ public class BatteryServiceImplement implements BatteryService {
             }
             
             battery = entity.getBattery();
-            stress = entity.getStress();
-
 
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseDto.databaseError();
         }
-        return BatteryResponseDto.success(battery, stress, recommendations);
+        return BatteryResponseDto.success(battery, recommendations);
     }
 }

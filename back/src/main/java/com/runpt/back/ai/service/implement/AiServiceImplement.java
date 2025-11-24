@@ -78,14 +78,6 @@ public class AiServiceImplement implements AiService {
             }
             float battery = aiRes.get("battery_score").floatValue();
 
-            // stress (선택값 → 없으면 0으로 처리)
-            float stress = 0;
-            if (aiRes.has("stress")) {
-                stress = aiRes.get("stress").floatValue();
-            } else {
-                System.out.println("⚠ WARNING: AI 응답에 stress 없음 → default=0");
-            }
-
             // recommendations (필수 배열)
             JsonNode recNode = aiRes.get("recommendations");
             if (recNode == null || !recNode.isArray()) {
@@ -106,7 +98,6 @@ public class AiServiceImplement implements AiService {
                     );
 
             entity.setBattery(battery);
-            entity.setStress(stress);
             entity.setRecommendationsJson(recommendationsJson);
 
             batteryRepository.save(entity);
@@ -123,7 +114,7 @@ public class AiServiceImplement implements AiService {
                     );
 
             BatteryResponseDto response =
-                    new BatteryResponseDto(battery, stress, recList);
+                    new BatteryResponseDto(battery, recList);
 
             System.out.println("===== [AI BATTERY REQUEST SUCCESS] =====");
 
