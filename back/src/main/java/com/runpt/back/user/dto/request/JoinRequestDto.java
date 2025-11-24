@@ -1,20 +1,21 @@
 package com.runpt.back.user.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor
 public class JoinRequestDto {
-    @NotBlank
+    @NotNull
     private long uid;
     @NotBlank
     private String nickname;
-    @NotBlank
+    @NotNull
     private int age;
-    @NotBlank
+    @NotNull
     private int height;
-    @NotBlank
+    @NotNull
     private int weight;
 }

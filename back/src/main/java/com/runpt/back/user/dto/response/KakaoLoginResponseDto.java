@@ -15,16 +15,16 @@ import lombok.Setter;
 public class KakaoLoginResponseDto extends ResponseDto{
 
     private long uid;
-    private boolean isNew;
+    private boolean fresh;
     private String nickname;
-    public KakaoLoginResponseDto(long uid, boolean isNew, String nickname) {
+    public KakaoLoginResponseDto(long uid, boolean fresh, String nickname) {
         super();
         this.uid = uid;
-        this.isNew = isNew;
+        this.fresh = fresh;
         this.nickname = nickname;
     }
 
-    public static ResponseEntity<KakaoLoginResponseDto> kakaoLoginSuccess(long uid, boolean isNew, String nickname) {
-        return ResponseEntity.status(HttpStatus.OK).body(new KakaoLoginResponseDto(uid, isNew, nickname));
+    public static ResponseEntity<KakaoLoginResponseDto> kakaoLoginSuccess(long uid, boolean fresh, String nickname) {
+        return ResponseEntity.status(HttpStatus.OK).body(new KakaoLoginResponseDto(uid, fresh, nickname));
     }    
 }
