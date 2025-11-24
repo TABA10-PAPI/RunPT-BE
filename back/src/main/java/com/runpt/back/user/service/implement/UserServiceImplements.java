@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -42,7 +41,7 @@ public class UserServiceImplements implements UserService {
     @Override
     public ResponseEntity<? super KakaoLoginResponseDto> kakaoLogin(KakaoLoginRequestDto dto) {
         long uid = 0;
-        boolean isNew = false;
+        boolean fresh = false;
         String nickname = null;
 
         try {
@@ -71,7 +70,7 @@ public class UserServiceImplements implements UserService {
                     .findByOauthProviderAndOauthUid("kakao", kakaoId);
 
             if (user == null) {
-                isNew = true;
+                fresh = true;
 
                 user = new UserEntity();
                 user.setOauthProvider("kakao");
@@ -91,7 +90,7 @@ public class UserServiceImplements implements UserService {
             return ResponseDto.databaseError();
         }
 
-        return KakaoLoginResponseDto.kakaoLoginSuccess(uid, isNew, nickname);
+        return KakaoLoginResponseDto.kakaoLoginSuccess(uid, fresh, nickname);
     }
 
 
