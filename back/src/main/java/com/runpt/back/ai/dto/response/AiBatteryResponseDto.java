@@ -15,8 +15,6 @@ public class AiBatteryResponseDto {
     @JsonProperty("battery_score")
     private float battery;
 
-    private float stress;
-
     private List<RecommendationDto> recommendations;
 
     @Getter
