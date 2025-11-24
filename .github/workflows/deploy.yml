@@ -9,44 +9,45 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. 소스코드 체크아웃
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # 2. JDK 설치
       - name: Set up JDK
         uses: actions/setup-java@v3
         with:
           java-version: '21'
           distribution: 'temurin'
 
-      # 3. Spring Boot 빌드
       - name: Build Spring Boot Project
         working-directory: ./back
         run: |
           chmod +x gradlew
           ./gradlew clean build -x test
 
-      # 4. EC2에 JAR 및 스크립트 전송 + 실행
       - name: Deploy to EC2
         env:
           HOST: ${{ secrets.EC2_HOST }}
           USER: ${{ secrets.EC2_USER }}
           PRIVATE_KEY: ${{ secrets.EC2_KEY }}
+          DB_END_POINT: ${{ secrets.DB_END_POINT }}
+          DB_USER_NAME: ${{ secrets.DB_USER_NAME }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
         run: |
-          # 🔐 SSH Key 생성
           echo "$PRIVATE_KEY" > key.pem
           chmod 600 key.pem
 
-          # 🟢 EC2 연결 확인
           ssh -o StrictHostKeyChecking=no -i key.pem $USER@$HOST "echo 'Connected to EC2'"
 
-          # 📦 파일 전송 (JAR + restart.sh)
           scp -o StrictHostKeyChecking=no -i key.pem back/build/libs/back-0.0.1-SNAPSHOT.jar $USER@$HOST:/home/ubuntu/app/
           scp -o StrictHostKeyChecking=no -i key.pem back/script/restart.sh $USER@$HOST:/home/ubuntu/app/
 
-          # 🔧 restart.sh 실행 가능 권한 부여
           ssh -o StrictHostKeyChecking=no -i key.pem $USER@$HOST "chmod +x /home/ubuntu/app/restart.sh"
 
-          # 🚀 서버 재시작 실행
+          # --- 환경변수 등록 ---
+          ssh -o StrictHostKeyChecking=no -i key.pem $USER@$HOST "echo DB_END_POINT=${DB_END_POINT} | sudo tee /etc/environment"
+          ssh -o StrictHostKeyChecking=no -i key.pem $USER@$HOST "echo DB_USER_NAME=${DB_USER_NAME} | sudo tee -a /etc/environment"
+          ssh -o StrictHostKeyChecking=no -i key.pem $USER@$HOST "echo DB_PASSWORD=${DB_PASSWORD} | sudo tee -a /etc/environment"
+          ssh -o StrictHostKeyChecking=no -i key.pem $USER@$HOST "echo JWT_SECRET=${JWT_SECRET} | sudo tee -a /etc/environment"
+
           ssh -o StrictHostKeyChecking=no -i key.pem $USER@$HOST "/home/ubuntu/app/restart.sh"
