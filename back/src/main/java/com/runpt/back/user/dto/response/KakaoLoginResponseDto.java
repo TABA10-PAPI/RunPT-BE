@@ -16,13 +16,15 @@ public class KakaoLoginResponseDto extends ResponseDto{
 
     private long uid;
     private boolean isNew;
-    public KakaoLoginResponseDto(long uid, boolean isNew) {
+    private String nickname;
+    public KakaoLoginResponseDto(long uid, boolean isNew, String nickname) {
         super();
         this.uid = uid;
         this.isNew = isNew;
+        this.nickname = nickname;
     }
 
-    public static ResponseEntity<KakaoLoginResponseDto> kakaoLoginSuccess(long uid, boolean isNew) {
-        return ResponseEntity.status(HttpStatus.OK).body(new KakaoLoginResponseDto(uid, isNew));
+    public static ResponseEntity<KakaoLoginResponseDto> kakaoLoginSuccess(long uid, boolean isNew, String nickname) {
+        return ResponseEntity.status(HttpStatus.OK).body(new KakaoLoginResponseDto(uid, isNew, nickname));
     }    
 }

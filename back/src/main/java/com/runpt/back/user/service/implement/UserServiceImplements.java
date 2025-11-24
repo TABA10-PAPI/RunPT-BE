@@ -28,6 +28,9 @@ public class UserServiceImplements implements UserService {
 
     @Override
     public ResponseEntity<? super KakaoLoginResponseDto> kakaoLogin(KakaoLoginRequestDto dto) {
+        long uid;
+        boolean isNew = false;
+        String nickname = null;
 
         try {
             String code = dto.getCode();
@@ -42,12 +45,10 @@ public class UserServiceImplements implements UserService {
             }
 
             String kakaoId = info.getId();
-            String nickname = info.getNickname();
+            nickname = info.getNickname();
 
             // 🔥 2. 기존 유저인지 확인
             UserEntity user = userRepository.findByOauthProviderAndOauthUid("kakao", kakaoId);
-
-            boolean isNew = false;
 
             // ❗ 3. 신규 회원 — 회원가입 처리
             if (user == null) {
@@ -68,12 +69,13 @@ public class UserServiceImplements implements UserService {
             }
 
             // 🔥 4. 로그인 성공 — uid 반환
-            long uid = user.getId();
-            return KakaoLoginResponseDto.kakaoLoginSuccess(uid, isNew);
+            uid = user.getId();
 
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseDto.databaseError();
         }
+
+        return KakaoLoginResponseDto.kakaoLoginSuccess(uid, isNew, nickname);
     }
 }
