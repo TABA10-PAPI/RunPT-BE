@@ -2,7 +2,7 @@ package com.runpt.back.global.helper;
 
 import java.util.Map;
 
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
@@ -12,44 +12,7 @@ import com.runpt.back.global.dto.KakaoUserInfo;
 @Component
 public class KakaoOauthHelper {
 
-    @Value("${spring.security.oauth2.client.registration.kakao.client-id}")
-    private String clientId;
-
-    @Value("${spring.security.oauth2.client.registration.kakao.client-secret}")
-    private String clientSecret;
-
     private final RestTemplate restTemplate = new RestTemplate();
-
-    // -----------------------------------------------------------
-    //  access token 획득
-    // -----------------------------------------------------------
-    public String getAccessToken(String code, String redirectUri) {
-        String tokenUri = "https://kauth.kakao.com/oauth/token";
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-
-        String body = "grant_type=authorization_code" +
-                "&client_id=" + clientId +
-                "&client_secret=" + clientSecret +
-                "&redirect_uri=" + redirectUri +
-                "&code=" + code;
-
-        HttpEntity<String> tokenRequest = new HttpEntity<>(body, headers);
-
-        ResponseEntity<Map> tokenResponse = restTemplate.exchange(
-                tokenUri,
-                HttpMethod.POST,
-                tokenRequest,
-                Map.class
-        );
-
-        Map response = tokenResponse.getBody();
-        if (response == null) return null;
-
-        Object token = response.get("access_token");
-        return token != null ? token.toString() : null;
-    }
 
     // -----------------------------------------------------------
     //  accessToken → userInfo(id + nickname)
@@ -62,14 +25,15 @@ public class KakaoOauthHelper {
 
         HttpEntity<?> request = new HttpEntity<>(headers);
 
-        ResponseEntity<Map> userInfoResponse = restTemplate.exchange(
-                userInfoUri,
-                HttpMethod.GET,
-                request,
-                Map.class
+        ResponseEntity<Map<String, Object>> response = restTemplate.exchange(
+            userInfoUri,
+            HttpMethod.GET,
+            request,
+            new ParameterizedTypeReference<Map<String, Object>>() {}
         );
 
-        Map<String, Object> body = userInfoResponse.getBody();
+        Map<String, Object> body = response.getBody();
+
         if (body == null) return null;
 
         // id 꺼내기
@@ -88,15 +52,5 @@ public class KakaoOauthHelper {
         }
 
         return new KakaoUserInfo(id, nickname);
-    }
-
-    // -----------------------------------------------------------
-    //  code → KakaoUserInfo(id, nickname)
-    // -----------------------------------------------------------
-    public KakaoUserInfo getKakaoUserInfo(String code, String redirectUri) {
-        String accessToken = getAccessToken(code, redirectUri);
-        if (accessToken == null) return null;
-
-        return getUserInfoFromToken(accessToken);
     }
 }

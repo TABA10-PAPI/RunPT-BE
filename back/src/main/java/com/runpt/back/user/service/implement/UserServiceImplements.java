@@ -55,10 +55,9 @@ public class UserServiceImplements implements UserService {
                 return ResponseDto.badRequest();
             }
 
-            // 🔥 Log - 받은 accessToken 출력
             System.out.println("[KAKAO LOGIN] Received accessToken = " + accessToken);
 
-            // 1) AccessToken → KakaoUserInfo 가져오기
+            // token → user info
             KakaoUserInfo info = kakaoOauthHelper.getUserInfoFromToken(accessToken);
             if (info == null) {
                 System.out.println("[KAKAO LOGIN] KakaoUserInfo is NULL");
@@ -68,17 +67,14 @@ public class UserServiceImplements implements UserService {
             String kakaoId = info.getId();
             nickname = info.getNickname();
 
-            // 🔥 Log - 카카오 정보 출력
             System.out.println("[KAKAO LOGIN] KakaoId = " + kakaoId);
             System.out.println("[KAKAO LOGIN] Nickname = " + nickname);
 
-            // 2) 기존 유저 확인
-            UserEntity user = userRepository.findByOauthProviderAndOauthUid("kakao", kakaoId);
+            UserEntity user = userRepository
+                    .findByOauthProviderAndOauthUid("kakao", kakaoId);
 
-            // 3) 신규 회원 가입
             if (user == null) {
                 isNew = true;
-                System.out.println("[KAKAO LOGIN] 신규 회원 → 회원가입 실행");
 
                 user = new UserEntity();
                 user.setOauthProvider("kakao");
@@ -86,16 +82,11 @@ public class UserServiceImplements implements UserService {
                 user.setNickname(nickname != null ? nickname : "닉네임 없음");
 
                 userRepository.save(user);
-                System.out.println("[KAKAO LOGIN] 신규 회원 저장 완료");
-            } else {
-                System.out.println("[KAKAO LOGIN] 기존 회원 로그인");
             }
 
-            // 4) uid 반환
             uid = user.getId();
 
             System.out.println("[KAKAO LOGIN] Login Success → uid = " + uid);
-            System.out.println("[KAKAO LOGIN] isNew = " + isNew);
 
         } catch (Exception e) {
             System.out.println("[KAKAO LOGIN] ERROR: " + e.getMessage());
@@ -105,6 +96,7 @@ public class UserServiceImplements implements UserService {
 
         return KakaoLoginResponseDto.kakaoLoginSuccess(uid, isNew, nickname);
     }
+
 
 
     @Override
