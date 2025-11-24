@@ -1,0 +1,137 @@
+package com.runpt.back.community.service.implement;
+
+import java.time.LocalDateTime;
+import java.util.List;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+
+import com.runpt.back.community.dto.request.*;
+import com.runpt.back.community.dto.response.*;
+import com.runpt.back.community.entity.CommentEntity;
+import com.runpt.back.community.entity.CommunityEntity;
+import com.runpt.back.community.repository.CommentRepository;
+import com.runpt.back.community.repository.CommunityRepository;
+import com.runpt.back.community.service.CommunityService;
+import com.runpt.back.global.dto.ResponseDto;
+
+import lombok.RequiredArgsConstructor;
+
+@Service
+@RequiredArgsConstructor
+public class CommunityServiceImplement implements CommunityService{
+
+    private final CommunityRepository communityRepository;
+    private final CommentRepository commentRepository;
+    //private final ProfileRepository profileRepository;
+    //private final TierRecordRepository tierRecordRepository;
+
+    @Override
+    public ResponseEntity<? super PostResponseDto> post(PostRequestDto dto) {
+        try {
+            Long uid = dto.getUid();
+
+            String nickname = "june";/*profileRepository.findByUid(uid)
+                        .map(ProfileEntity::getNickname)
+                        .orElse("알 수 없음");*/
+
+            String tier = "silver"; /*tierRecordRepository.findTopByUidOrderByCreatedAtDesc(uid)
+                .map(TierRecordEntity::getTier)
+                .orElse("UNRANKED");*/
+
+            LocalDateTime t = LocalDateTime.now();
+            CommunityEntity entity = new CommunityEntity(dto, t, nickname, tier);
+            communityRepository.save(entity);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseDto.databaseError();
+        }
+
+        return PostResponseDto.success();
+    }
+
+
+    @Override
+    public ResponseEntity<? super HomeResponseDto> getList(HomeRequestDto dto) {
+        List<CommunityEntity> entityList = null;
+        try {
+            // 1. uid 로 프로필 찾기
+            //ProfileEntity profile = profileRepository.findByUid(request.getUid());
+            //if (profile == null) {
+            //throw new RuntimeException("프로필을 찾을 수 없습니다.");
+            //}
+
+            // 2. 성별 가져오기
+            String userGender = "MALE"; //profile.getGender();   // "MALE", "FEMALE"
+
+            // 3. 필터링 조건 만들기
+            List<String> genderFilter;
+
+            if ("MALE".equalsIgnoreCase(userGender)) {
+                genderFilter = List.of("MALE", "ALL");
+            } else if ("FEMALE".equalsIgnoreCase(userGender)) {
+                genderFilter = List.of("FEMALE", "ALL");
+            } else {
+                genderFilter = List.of("ALL");
+            }
+
+            // 4. 게시글 조회
+            entityList = communityRepository.findByTargetgenderIn(genderFilter);
+        } catch (Exception e) {
+            
+        }
+        return HomeResponseDto.success(entityList);
+    }
+
+    @Override
+    public ResponseEntity<? super DetailResponseDto> getDetail(DetailRequestDto dto){
+        try {
+             Long id = dto.getId();
+
+            CommunityEntity community = communityRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("게시글이 존재하지 않습니다."));
+
+            List<CommentEntity> commentList = 
+                commentRepository.findByCommunityidOrderByCreateAtAsc(id);
+
+            List<CommunityCommentResponseDto> comments = commentList.stream()
+                .map(comment -> {
+                    Long uid = comment.getUid();
+                    
+                    String nickname = "june";/*profileRepository.findByUid(uid)
+                        .map(ProfileEntity::getNickname)
+                        .orElse("알 수 없음");*/
+
+                    String tier = "silver"; /*tierRecordRepository.findTopByUidOrderByCreatedAtDesc(uid)
+                        .map(TierRecordEntity::getTier)
+                        .orElse("UNRANKED");*/
+
+                    return new CommunityCommentResponseDto(comment, nickname, tier);
+                })
+                .toList();
+
+            return DetailResponseDto.success(community, comments);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseDto.databaseError();
+        }
+    }
+
+    @Override
+    public ResponseEntity<? super CommentResponseDto> writeComment(CommentRequestDto dto) {
+        try {
+            LocalDateTime t = LocalDateTime.now();
+            CommentEntity comment = new CommentEntity(dto, t);
+
+            commentRepository.save(comment); 
+
+            return CommentResponseDto.success();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseDto.databaseError();
+        }
+    }
+}
+    
