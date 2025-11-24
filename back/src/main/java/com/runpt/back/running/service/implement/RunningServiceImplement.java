@@ -28,9 +28,11 @@ public class RunningServiceImplement implements RunningService {
 
     @Override
     public ResponseEntity<? super RunningResponseDto> getRunningPlan(RunningRequestDto dto) {
+        Long uid = dto.getUid();
+        String date = dto.getDate();
+        List<RunningRecommendationDto> recommendations = null;
+
         try {
-            Long uid = dto.getUid();
-            String date = dto.getDate();
             
             if (uid == null) throw new RuntimeException("요청 uid가 null 입니다");
             if (date == null || date.isBlank()) throw new RuntimeException("요청 date가 비어있습니다");
@@ -41,8 +43,6 @@ public class RunningServiceImplement implements RunningService {
                             "Battery 데이터 없음 → uid=" + uid + ", date=" + date));
 
             String json = battery.getRecommendationsJson();
-
-            List<RunningRecommendationDto> recommendations;
 
             if (json == null || json.isBlank()) {
                 
@@ -59,12 +59,11 @@ public class RunningServiceImplement implements RunningService {
                 }
             }
 
-            return RunningResponseDto.success(uid, date, recommendations);
-
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseDto.databaseError();
         }
+        return RunningResponseDto.success(uid, date, recommendations);
     }
 }
 

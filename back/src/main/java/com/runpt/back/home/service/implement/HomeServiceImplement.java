@@ -36,13 +36,17 @@ public class HomeServiceImplement implements HomeService {
 
     @Override
     public ResponseEntity<? super HomeResponseDto> getHome(HomeRequestDto dto) {
+        int distance = 0;
+        Long uid = dto.getUid();
+        String date = dto.getDate();
+        String nickname = null;
+        float batteryvalue = 0;
+        HomeRecommendationDto firstRecommendation = null;
+        String tier = null;
 
         try {
-            Long uid = dto.getUid();
-            String date = dto.getDate();
-
             // 1) user table → nickname
-            String nickname = "june" ;/*userRepository.findById(uid)
+            nickname = "june" ;/*userRepository.findById(uid)
                     .map(UserEntity::getNickname)
                     .orElse("Unknown");*/
 
@@ -50,10 +54,10 @@ public class HomeServiceImplement implements HomeService {
             BatteryEntity battery = batteryRepository.findByUidAndDate(uid, date)
                     .orElseThrow(() -> new RuntimeException("No battery data"));
 
-            float batteryvalue = battery.getBattery();
+            batteryvalue = battery.getBattery();
 
             // recommendationsJson → 첫 번째 추천만 꺼내기
-            HomeRecommendationDto firstRecommendation = null;
+            
 
             if (battery.getRecommendationsJson() != null) {
                 List<HomeRecommendationDto> list = objectMapper.readValue(
@@ -65,28 +69,19 @@ public class HomeServiceImplement implements HomeService {
             }
 
             // 3) runningsession → 최근 distance
-            int distance =  3;/*runningSessionRepository.findTopByUidOrderByDateDesc(uid)
+            distance =  3;/*runningSessionRepository.findTopByUidOrderByDateDesc(uid)
                     .map(RunningSessionEntity::getDistance)
                     .orElse(0);*/
 
             // 4) tierrecord → 최신 tier
-            String tier = "gold"; /*tierRecordRepository.findTopByUidOrderByCreatedAtDesc(uid)
+            tier = "gold"; /*tierRecordRepository.findTopByUidOrderByCreatedAtDesc(uid)
                     .map(TierRecordEntity::getTier)
                     .orElse("UNRANKED");*/
-
-            return HomeResponseDto.success(
-                    uid,
-                    date,
-                    nickname,
-                    batteryvalue,
-                    firstRecommendation,
-                    distance,
-                    tier
-            );
 
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseDto.databaseError();
         }
+        return HomeResponseDto.success(uid, date, nickname, batteryvalue, firstRecommendation, distance, tier);
     }
 }

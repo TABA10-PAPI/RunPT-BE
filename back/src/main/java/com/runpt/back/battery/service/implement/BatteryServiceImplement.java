@@ -3,7 +3,6 @@ package com.runpt.back.battery.service.implement;
 import java.util.Collections;
 import java.util.List;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -28,7 +27,9 @@ public class BatteryServiceImplement implements BatteryService {
 
     private final BatteryRepository batteryRepository;
     private final ObjectMapper objectMapper = new ObjectMapper();
-
+    float battery = 0;
+    float stress = 0;
+    List<RecommendationDto> recommendations = null;
     @Override
     public ResponseEntity<? super BatteryResponseDto> getBattery(BatteryRequestDto dto) {
         try {
@@ -36,22 +37,22 @@ public class BatteryServiceImplement implements BatteryService {
                     .orElseThrow(() -> new RuntimeException("해당 날짜 데이터 없음"));
 
             // JSON 파싱
-            List<RecommendationDto> recommendations = Collections.emptyList();
+            recommendations = Collections.emptyList();
             if (entity.getRecommendationsJson() != null) {
                 recommendations = objectMapper.readValue(
                         entity.getRecommendationsJson(),
                         new TypeReference<List<RecommendationDto>>() {}
                 );
             }
+            
+            battery = entity.getBattery();
+            stress = entity.getStress();
 
-            BatteryResponseDto response =
-                    new BatteryResponseDto(entity.getBattery(), entity.getStress(), recommendations);
-
-            return ResponseEntity.status(HttpStatus.OK).body(response);
 
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseDto.databaseError();
         }
+        return BatteryResponseDto.success(battery, stress, recommendations);
     }
 }
