@@ -1,6 +1,6 @@
 package com.runpt.back.runningsession.entity;
 
-import com.runpt.back.user.entity.User;
+import com.runpt.back.user.entity.UserEntity;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
@@ -20,7 +20,7 @@ public class RunningSession {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_uuid", nullable = false)
-    private User user;
+    private UserEntity user;
 
     @Column(name = "distance_m", nullable = false)
     private Integer distanceM; // 미터 단위

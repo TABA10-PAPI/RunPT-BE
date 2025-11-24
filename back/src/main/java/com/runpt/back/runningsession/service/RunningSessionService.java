@@ -3,7 +3,7 @@ package com.runpt.back.runningsession.service;
 import com.runpt.back.runningsession.entity.RunningSession;
 import com.runpt.back.runningsession.repository.RunningSessionRepository;
 import com.runpt.back.tier.service.TierService;
-import com.runpt.back.user.entity.User;
+import com.runpt.back.user.entity.UserEntity;
 import com.runpt.back.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -22,7 +22,7 @@ public class RunningSessionService {
      */
     @Transactional
     public RunningSession saveRunningSession(Long uid, RunningSession runningSession) {
-        User user = userRepository.findById(uid)
+        UserEntity user = userRepository.findById(uid)
                 .orElseThrow(() -> new RuntimeException("유저를 찾을 수 없습니다."));
 
         runningSession.setUser(user);

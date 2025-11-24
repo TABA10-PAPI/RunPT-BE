@@ -1,13 +1,9 @@
 package com.runpt.back.user.repository;
 
-import com.runpt.back.user.entity.User;
+import com.runpt.back.user.entity.UserEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
 
-import java.util.Optional;
+public interface UserRepository extends JpaRepository<UserEntity, Long> {
 
-@Repository
-public interface UserRepository extends JpaRepository<User, Long> {
-
-    Optional<User> findByOauthProviderAndOauthUid(String oauthProvider, String oauthUid);
+    UserEntity findByOauthProviderAndOauthUid(String oauthProvider, String oauthUid);
 }

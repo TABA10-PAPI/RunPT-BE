@@ -1,6 +1,6 @@
 package com.runpt.back.tier.entity;
 
-import com.runpt.back.user.entity.User;
+import com.runpt.back.user.entity.UserEntity;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
@@ -20,7 +20,7 @@ public class TierRecord {
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_uuid", nullable = false, unique = true)
-    private User user;
+    private UserEntity user;
 
     @Column(name = "short_tier_rank")
     private String shortTierRank; // "BRONZE", "SILVER", "GOLD", etc.

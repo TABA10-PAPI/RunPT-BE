@@ -5,7 +5,7 @@ import com.runpt.back.profile.dto.ProfileRequest;
 import com.runpt.back.profile.dto.ProfileResponse;
 import com.runpt.back.profile.entity.Profile;
 import com.runpt.back.profile.repository.ProfileRepository;
-import com.runpt.back.user.entity.User;
+import com.runpt.back.user.entity.UserEntity;
 import com.runpt.back.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -21,7 +21,7 @@ public class ProfileService {
     /** 프로필 생성 (회원가입 단계) */
     public Profile createProfile(Long uid, ProfileRequest request) {
 
-        User user = userRepository.findById(uid)
+        UserEntity user = userRepository.findById(uid)
                 .orElseThrow(() -> new RuntimeException("유저가 존재하지 않습니다."));
 
         Profile profile = Profile.builder()
@@ -39,7 +39,7 @@ public class ProfileService {
 
     /** 프로필 조회 */
     public Profile getProfile(Long uid) {
-        User user = userRepository.findById(uid)
+        UserEntity user = userRepository.findById(uid)
                 .orElseThrow(() -> new RuntimeException("유저를 찾을 수 없습니다."));
 
         return profileRepository.findByUserId(uid)
@@ -63,7 +63,7 @@ public class ProfileService {
     /** 프로필 수정 */
     public Profile updateProfile(Long uid, ProfileRequest request) {
 
-        User user = userRepository.findById(uid)
+        UserEntity user = userRepository.findById(uid)
                 .orElseThrow(() -> new RuntimeException("유저를 찾을 수 없습니다."));
 
         Profile profile = profileRepository.findByUserId(uid)

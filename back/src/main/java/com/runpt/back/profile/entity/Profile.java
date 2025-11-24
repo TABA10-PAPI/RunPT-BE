@@ -1,6 +1,6 @@
 package com.runpt.back.profile.entity;
 
-import com.runpt.back.user.entity.User;
+import com.runpt.back.user.entity.UserEntity;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
@@ -20,7 +20,7 @@ public class Profile {
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_uuid", nullable = false)
-    private User user; 
+    private UserEntity user; 
 
     @Column(nullable = false)
     private String name;

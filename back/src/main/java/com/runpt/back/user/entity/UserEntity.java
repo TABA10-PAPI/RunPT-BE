@@ -11,7 +11,7 @@ import lombok.*;
 @AllArgsConstructor
 @Entity
 @Table(name = "user")
-public class User {
+public class UserEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -21,5 +21,20 @@ public class User {
     private String oauthProvider;   
 
     @Column(nullable = false)
-    private String oauthUid;        
+    private String oauthUid;
+    
+    @Column(nullable = false)
+    private String nickname;
+
+    @Column(nullable = true)
+    private Integer age;
+
+    @Column(nullable = true)
+    private Integer height;
+
+    @Column(nullable = true)
+    private Integer weight;
+
+    @Column(length = 1, nullable = true)
+    private String gender;
 }
