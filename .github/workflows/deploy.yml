@@ -29,10 +29,6 @@ jobs:
           HOST: ${{ secrets.EC2_HOST }}
           USER: ${{ secrets.EC2_USER }}
           PRIVATE_KEY: ${{ secrets.EC2_KEY }}
-          DB_END_POINT: ${{ secrets.DB_END_POINT }}
-          DB_USER_NAME: ${{ secrets.DB_USER_NAME }}
-          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-          JWT_SECRET: ${{ secrets.JWT_SECRET }}
         run: |
           echo "$PRIVATE_KEY" > key.pem
           chmod 600 key.pem
@@ -43,12 +39,5 @@ jobs:
           scp -o StrictHostKeyChecking=no -i key.pem back/script/restart.sh $USER@$HOST:/home/ubuntu/app/
 
           ssh -o StrictHostKeyChecking=no -i key.pem $USER@$HOST "chmod +x /home/ubuntu/app/restart.sh"
-
-          # --- 환경변수 등록 ---
-          ssh -o StrictHostKeyChecking=no -i key.pem $USER@$HOST "echo DB_END_POINT=${{ secrets.DB_END_POINT }} | sudo tee /etc/environment"
-          ssh -o StrictHostKeyChecking=no -i key.pem $USER@$HOST "echo DB_USER_NAME=${{ secrets.DB_USER_NAME }} | sudo tee -a /etc/environment"
-          ssh -o StrictHostKeyChecking=no -i key.pem $USER@$HOST "echo DB_PASSWORD=${{ secrets.DB_PASSWORD }} | sudo tee -a /etc/environment"
-          ssh -o StrictHostKeyChecking=no -i key.pem $USER@$HOST "echo JWT_SECRET=${{ secrets.JWT_SECRET }} | sudo tee -a /etc/environment"
-
 
           ssh -o StrictHostKeyChecking=no -i key.pem $USER@$HOST "/home/ubuntu/app/restart.sh"
