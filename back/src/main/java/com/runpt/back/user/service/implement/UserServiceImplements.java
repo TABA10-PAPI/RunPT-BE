@@ -60,6 +60,8 @@ public class UserServiceImplements implements UserService {
                 // 카카오 닉네임 저장 (없을 수도 있으니 null 체크)
                 if (nickname != null) {
                     user.setNickname(nickname);
+                }else{
+                    user.setNickname("닉네임 없음");
                 }
 
                 userRepository.save(user);
