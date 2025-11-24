@@ -106,7 +106,7 @@ public class UserServiceImplements implements UserService {
             }
             user.setNickname(dto.getNickname());
             user.setAge(dto.getAge());
-            user.setGender("MALE");
+            user.setGender("M");
             user.setHeight(dto.getHeight());
             user.setWeight(dto.getWeight());
             userRepository.save(user);
