@@ -39,6 +39,7 @@ public class BatteryResponseDto extends ResponseDto {
     }
 
     public BatteryResponseDto(float battery, float stress, List<RecommendationDto> recommendations) {
+        super();
         this.battery = battery;
         this.stress = stress;
         this.recommendations = recommendations;
