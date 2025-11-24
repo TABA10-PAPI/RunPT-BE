@@ -5,6 +5,6 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor
-public class KakaoLoginRequestDto {
-    private String accessToken;
+public class GetMyPageRequestDto {
+    private long uid;
 }
