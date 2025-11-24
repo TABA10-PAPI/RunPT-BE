@@ -1,4 +1,4 @@
-package com.runpt.back.battery.dto.request;
+package com.runpt.back.running.dto.request;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;

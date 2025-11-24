@@ -1,4 +1,4 @@
-package com.runpt.back.battery.dto.response;
+package com.runpt.back.running.dto.response;
 
 import java.util.List;
 
