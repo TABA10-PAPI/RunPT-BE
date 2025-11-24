@@ -14,8 +14,6 @@ public class JoinRequestDto {
     @NotBlank
     private int age;
     @NotBlank
-    private String gender;
-    @NotBlank
     private int height;
     @NotBlank
     private int weight;
