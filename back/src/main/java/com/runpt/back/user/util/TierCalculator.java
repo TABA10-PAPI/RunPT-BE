@@ -1,4 +1,4 @@
-package com.runpt.back.tier.util;
+package com.runpt.back.user.util;
 
 import lombok.Getter;
 
@@ -28,8 +28,8 @@ public class TierCalculator {
      * @param pace 분/km 단위
      * @return 티어
      */
-    public static Tier calculateShortDistanceTier(Double pace) {
-        if (pace == null || pace <= 0) {
+    public static Tier calculateShortDistanceTier(int pace) {
+        if (pace <= 0) {
             return Tier.BRONZE;
         }
 
@@ -57,8 +57,8 @@ public class TierCalculator {
      * @param pace 분/km 단위
      * @return 티어
      */
-    public static Tier calculateLongDistanceTier(Double pace) {
-        if (pace == null || pace <= 0) {
+    public static Tier calculateLongDistanceTier(int pace) {
+        if (pace <= 0) {
             return Tier.BRONZE;
         }
 
@@ -85,8 +85,8 @@ public class TierCalculator {
      * @param pace 분/km 단위
      * @return 티어
      */
-    public static Tier calculateTier(String distanceType, Double pace) {
-        if (distanceType == null || pace == null) {
+    public static Tier calculateTier(String distanceType, int pace) {
+        if (distanceType == null) {
             return Tier.BRONZE;
         }
 

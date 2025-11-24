@@ -6,8 +6,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.runpt.back.user.dto.request.KakaoLoginRequestDto;
-import com.runpt.back.user.dto.response.KakaoLoginResponseDto;
+import com.runpt.back.user.dto.request.*;
+import com.runpt.back.user.dto.response.*;
 import com.runpt.back.user.service.UserService;
 
 import lombok.RequiredArgsConstructor;
@@ -25,4 +25,26 @@ public class UserController {
     ) {
         return userService.kakaoLogin(requestBody);
     }
+
+    @PostMapping("/join")
+    public ResponseEntity<? super JoinResponseDto> join(
+        @RequestBody JoinRequestDto requestBody
+    ) { 
+        return userService.join(requestBody);
+    }
+    
+    @PostMapping("mypage")
+    public ResponseEntity<? super GetMyPageResponseDto> getMyPage(
+        @RequestBody GetMyPageRequestDto requestBody
+    ) {
+        return userService.getMyPage(requestBody);
+    }
+
+    @PostMapping("/saeve-running")
+    public ResponseEntity<? super SaveRunningResponseDto> saveRunning(
+        @RequestBody SaveRunningRequestDto requestBody
+    ) {
+        return userService.saveRunning(requestBody);
+    }
+    
 }
