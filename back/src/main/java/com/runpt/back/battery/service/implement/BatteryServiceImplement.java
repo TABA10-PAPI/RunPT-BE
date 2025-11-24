@@ -28,7 +28,6 @@ public class BatteryServiceImplement implements BatteryService {
     private final BatteryRepository batteryRepository;
     private final ObjectMapper objectMapper = new ObjectMapper();
     float battery = 0;
-    float stress = 0;
     List<RecommendationDto> recommendations = null;
     @Override
     public ResponseEntity<? super BatteryResponseDto> getBattery(BatteryRequestDto dto) {
