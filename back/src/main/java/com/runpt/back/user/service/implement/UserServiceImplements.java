@@ -22,13 +22,12 @@ public class UserServiceImplements implements UserService {
     private final UserRepository userRepository;
     private final KakaoOauthHelper kakaoOauthHelper;
 
-    // application.yml 에서 불러오기
     @Value("${spring.security.oauth2.client.registration.kakao.redirect-uri}")
     private String KAKAO_REDIRECT_URL;
 
     @Override
     public ResponseEntity<? super KakaoLoginResponseDto> kakaoLogin(KakaoLoginRequestDto dto) {
-        long uid;
+        long uid = 0;
         boolean isNew = false;
         String nickname = null;
 
@@ -38,40 +37,59 @@ public class UserServiceImplements implements UserService {
                 return ResponseDto.badRequest();
             }
 
-            // 🔥 1. KakaoUserInfo 가져오기 (id + nickname)
+            // 🔥 Log - 받은 code 출력
+            System.out.println("[KAKAO LOGIN] Received code = " + code);
+
+            // 1) KakaoUserInfo 가져오기
             KakaoUserInfo info = kakaoOauthHelper.getKakaoUserInfo(code, KAKAO_REDIRECT_URL);
             if (info == null) {
+                System.out.println("[KAKAO LOGIN] KakaoUserInfo is NULL");
                 return KakaoLoginResponseDto.databaseError();
             }
 
             String kakaoId = info.getId();
             nickname = info.getNickname();
 
-            // 🔥 2. 기존 유저인지 확인
+            // 🔥 Log - 카카오 정보 출력
+            System.out.println("[KAKAO LOGIN] KakaoId = " + kakaoId);
+            System.out.println("[KAKAO LOGIN] Nickname = " + nickname);
+
+            // 2) 기존 유저인지 확인
             UserEntity user = userRepository.findByOauthProviderAndOauthUid("kakao", kakaoId);
 
-            // ❗ 3. 신규 회원 — 회원가입 처리
+            // 3) 신규 회원 가입 처리
             if (user == null) {
                 isNew = true;
+
+                System.out.println("[KAKAO LOGIN] 신규 회원입니다. 카카오 정보로 회원가입 진행.");
 
                 user = new UserEntity();
                 user.setOauthProvider("kakao");
                 user.setOauthUid(kakaoId);
 
-                // 카카오 닉네임 저장 (없을 수도 있으니 null 체크)
                 if (nickname != null) {
                     user.setNickname(nickname);
-                }else{
+                } else {
                     user.setNickname("닉네임 없음");
                 }
 
                 userRepository.save(user);
+
+                System.out.println("[KAKAO LOGIN] 신규 회원 저장 완료.");
+            } else {
+                System.out.println("[KAKAO LOGIN] 기존 회원 로그인 처리.");
             }
 
-            // 🔥 4. 로그인 성공 — uid 반환
+            // 4) 로그인 성공 → uid 가져오기
             uid = user.getId();
 
+            // 🔥 Log - 최종 정보 출력
+            System.out.println("[KAKAO LOGIN] Login Success → uid = " + uid);
+            System.out.println("[KAKAO LOGIN] isNew = " + isNew);
+            System.out.println("[KAKAO LOGIN] Final Nickname = " + nickname);
+
         } catch (Exception e) {
+            System.out.println("[KAKAO LOGIN] ERROR OCCURRED: " + e.getMessage());
             e.printStackTrace();
             return ResponseDto.databaseError();
         }
