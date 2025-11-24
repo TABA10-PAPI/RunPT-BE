@@ -19,8 +19,8 @@ import com.runpt.back.ai.entity.BatteryEntity;
 import com.runpt.back.ai.repository.BatteryRepository;
 import com.runpt.back.ai.service.AiService;
 
-import com.runpt.back.battery.dto.response.BatteryResponseDto;
-import com.runpt.back.battery.dto.response.BatteryResponseDto.RecommendationDto;
+import com.runpt.back.ai.dto.response.AiBatteryResponseDto;
+import com.runpt.back.ai.dto.response.AiBatteryResponseDto.RecommendationDto;
 
 import com.runpt.back.global.dto.ResponseDto;
 
@@ -37,11 +37,14 @@ public class AiServiceImplement implements AiService {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
-    public ResponseEntity<? super BatteryResponseDto> analyzeBattery(AiBatteryRequestDto dto) {
+    public ResponseEntity<? super AiBatteryResponseDto> analyzeBattery(AiBatteryRequestDto dto) {
 
         System.out.println("===== [AI BATTERY REQUEST START] =====");
         System.out.println("UID = " + dto.getUid());
         System.out.println("DATE = " + dto.getDate());
+
+        float battery = 0;
+        List<RecommendationDto> recList = null;
 
         try {
             Long uid = dto.getUid();
@@ -76,7 +79,7 @@ public class AiServiceImplement implements AiService {
             if (!aiRes.has("battery_score")) {
                 throw new RuntimeException("AI 응답에 battery_score 필드가 없습니다.");
             }
-            float battery = aiRes.get("battery_score").floatValue();
+            battery = aiRes.get("battery_score").floatValue();
 
             // recommendations (필수 배열)
             JsonNode recNode = aiRes.get("recommendations");
@@ -105,20 +108,13 @@ public class AiServiceImplement implements AiService {
             // ---------------------------
             // 4) BatteryResponseDto 로 변환
             // ---------------------------
-            List<RecommendationDto> recList =
+            recList =
                     objectMapper.readValue(
                             recommendationsJson,
                             objectMapper.getTypeFactory().constructCollectionType(
                                     List.class, RecommendationDto.class
                             )
                     );
-
-            BatteryResponseDto response =
-                    new BatteryResponseDto(battery, recList);
-
-            System.out.println("===== [AI BATTERY REQUEST SUCCESS] =====");
-
-            return ResponseEntity.status(HttpStatus.OK).body(response);
 
         } catch (Exception e) {
 
@@ -128,5 +124,7 @@ public class AiServiceImplement implements AiService {
 
             return ResponseDto.databaseError();
         }
+        
+        return AiBatteryResponseDto.success(battery, recList);
     }
 }

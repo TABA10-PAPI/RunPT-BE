@@ -5,7 +5,10 @@ import org.springframework.web.bind.annotation.*;
 
 import com.runpt.back.ai.dto.request.AiBatteryRequestDto;
 import com.runpt.back.ai.service.AiService;
-import com.runpt.back.battery.dto.response.BatteryResponseDto;
+
+import jakarta.validation.Valid;
+
+import com.runpt.back.ai.dto.response.AiBatteryResponseDto;
 
 import lombok.RequiredArgsConstructor;
 
@@ -17,9 +20,10 @@ public class AiController {
     private final AiService aiService;
 
     @PostMapping("/battery")
-    public ResponseEntity<? super BatteryResponseDto> analyzeBattery(
-            @RequestBody AiBatteryRequestDto requestBody
+    public ResponseEntity<? super AiBatteryResponseDto> analyzeBattery(
+            @RequestBody @Valid AiBatteryRequestDto requestBody
     ) {
-        return aiService.analyzeBattery(requestBody);
+        ResponseEntity<? super AiBatteryResponseDto> response = aiService.analyzeBattery(requestBody);
+        return response;
     }
 }

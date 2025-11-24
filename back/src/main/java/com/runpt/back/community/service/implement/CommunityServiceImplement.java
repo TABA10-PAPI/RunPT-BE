@@ -85,16 +85,18 @@ public class CommunityServiceImplement implements CommunityService{
 
     @Override
     public ResponseEntity<? super DetailResponseDto> getDetail(DetailRequestDto dto){
+        CommunityEntity community = null;
+        List<CommunityCommentResponseDto> comments = null;
         try {
              Long id = dto.getId();
 
-            CommunityEntity community = communityRepository.findById(id)
+            community = communityRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("게시글이 존재하지 않습니다."));
 
             List<CommentEntity> commentList = 
                 commentRepository.findByCommunityidOrderByCreateAtAsc(id);
 
-            List<CommunityCommentResponseDto> comments = commentList.stream()
+            comments = commentList.stream()
                 .map(comment -> {
                     Long uid = comment.getUid();
                     
@@ -110,12 +112,13 @@ public class CommunityServiceImplement implements CommunityService{
                 })
                 .toList();
 
-            return DetailResponseDto.success(community, comments);
+            
 
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseDto.databaseError();
         }
+        return DetailResponseDto.success(community, comments);
     }
 
     @Override
@@ -126,12 +129,11 @@ public class CommunityServiceImplement implements CommunityService{
 
             commentRepository.save(comment); 
 
-            return CommentResponseDto.success();
-
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseDto.databaseError();
         }
+        return CommentResponseDto.success();
     }
 }
     
