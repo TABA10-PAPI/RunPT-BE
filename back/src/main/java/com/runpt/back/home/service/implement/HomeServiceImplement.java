@@ -14,12 +14,12 @@ import com.runpt.back.home.dto.request.HomeRequestDto;
 import com.runpt.back.home.dto.response.HomeRecommendationDto;
 import com.runpt.back.home.dto.response.HomeResponseDto;
 import com.runpt.back.home.service.HomeService;
-//import com.runpt.back.runningSession.entity.RunningSessionEntity;
-//import com.runpt.back.runningSession.repository.RunningSessionRepository;
-//import com.runpt.back.tier.entity.TierRecordEntity;
-//import com.runpt.back.tier.repository.TierRecordRepository;
-//import com.runpt.back.user.entity.UserEntity;
-//import com.runpt.back.user.repository.UserRepository;
+import com.runpt.back.user.entity.RunningSessionEntity;
+import com.runpt.back.user.entity.TierEntity;
+import com.runpt.back.user.entity.UserEntity;
+import com.runpt.back.user.repository.RunningSessionRepository;
+import com.runpt.back.user.repository.TierRepository;
+import com.runpt.back.user.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -28,9 +28,9 @@ import lombok.RequiredArgsConstructor;
 public class HomeServiceImplement implements HomeService {
 
     private final BatteryRepository batteryRepository;
-    //private final UserRepository userRepository;
-    //private final TierRecordRepository tierRecordRepository;
-    //private final RunningSessionRepository runningSessionRepository;
+    private final UserRepository userRepository;
+    private final TierRepository tierRepository;
+    private final RunningSessionRepository runningSessionRepository;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -46,9 +46,9 @@ public class HomeServiceImplement implements HomeService {
 
         try {
             // 1) user table → nickname
-            nickname = "june" ;/*userRepository.findById(uid)
+            nickname = userRepository.findById(uid)
                     .map(UserEntity::getNickname)
-                    .orElse("Unknown");*/
+                    .orElse("Unknown");
 
             // 2) battery table → batteryvalue + recommendationsJson
             BatteryEntity battery = batteryRepository.findByUidAndDate(uid, date)
@@ -69,14 +69,14 @@ public class HomeServiceImplement implements HomeService {
             }
 
             // 3) runningsession → 최근 distance
-            distance =  3;/*runningSessionRepository.findTopByUidOrderByDateDesc(uid)
+            distance =  runningSessionRepository.findByUidOrderByDateDesc(uid)
                     .map(RunningSessionEntity::getDistance)
-                    .orElse(0);*/
+                    .orElse(0);
 
             // 4) tierrecord → 최신 tier
-            tier = "gold"; /*tierRecordRepository.findTopByUidOrderByCreatedAtDesc(uid)
-                    .map(TierRecordEntity::getTier)
-                    .orElse("UNRANKED");*/
+            tier = tierRepository.findOneByUid(uid)
+                    .map(TierEntity::getShortTierRank)
+                    .orElse("UNRANKED");
 
         } catch (Exception e) {
             e.printStackTrace();
