@@ -238,7 +238,7 @@ public class UserServiceImplements implements UserService {
 
     private void sendRunningToAi(SaveRunningRequestDto dto) {
     try {
-        String url = "http://13.124.197.160:8000/running";
+        String url = "http://13.124.197.160:8000/running/save";
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
