@@ -19,7 +19,7 @@ public class UserController {
     private final UserService userService;
 
     // 🔥 카카오 로그인 + 자동 회원가입 통합 API
-    @PostMapping("/kakao")
+    @PostMapping("/kakao-login")
     public ResponseEntity<? super KakaoLoginResponseDto> kakaoAuth(
             @RequestBody KakaoLoginRequestDto requestBody
     ) {
