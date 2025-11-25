@@ -17,6 +17,7 @@ import com.runpt.back.global.dto.ResponseDto;
 import com.runpt.back.user.repository.TierRepository;
 import com.runpt.back.user.repository.UserRepository;
 import com.runpt.back.user.entity.TierEntity;
+import com.runpt.back.user.entity.UserEntity;
 
 import lombok.RequiredArgsConstructor;
 
@@ -57,14 +58,13 @@ public class CommunityServiceImplement implements CommunityService{
     public ResponseEntity<? super HomeResponseDto> getList(HomeRequestDto dto) {
         List<CommunityEntity> entityList = null;
         try {
+            Long uid = dto.getUid();
             // 1. uid 로 프로필 찾기
-            //UserEntity user = userRepository.findByUid(request.getUid());
-            //if (user == null) {
-            //throw new RuntimeException("프로필을 찾을 수 없습니다.");
-            //}
+            UserEntity user = userRepository.findById(uid)
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
             // 2. 성별 가져오기
-            String userGender = "MALE"; //user.getGender();   // "MALE", "FEMALE"
+            String userGender = user.getGender();   // "MALE", "FEMALE"
 
             // 3. 필터링 조건 만들기
             List<String> genderFilter;
@@ -95,6 +95,8 @@ public class CommunityServiceImplement implements CommunityService{
             community = communityRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("게시글이 존재하지 않습니다."));
 
+            
+                
             List<CommentEntity> commentList = 
                 commentRepository.findByCommunityidOrderByCreateAtAsc(id);
 

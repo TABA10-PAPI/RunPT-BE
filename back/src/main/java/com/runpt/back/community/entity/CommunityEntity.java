@@ -31,9 +31,7 @@ public class CommunityEntity {
 
     private String nickname;
     private String tier;
-    //@ManyToOne(fetch = FetchType.LAZY)
-    //@JoinColumn(name = "user_uuid")
-    //private User user;
+
 
     @CreationTimestamp
     private LocalDateTime createAt;

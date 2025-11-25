@@ -19,6 +19,8 @@ import lombok.Setter;
 public class DetailResponseDto extends ResponseDto{
     private Long id;           // 엔티티의 PK 필드명에 맞게 수정 필요
     private Long uid;
+    private String nickname;
+    private String tier;
     private String title;
     private String startpoint;
     private int distance;
@@ -30,9 +32,11 @@ public class DetailResponseDto extends ResponseDto{
 
     private List<CommunityCommentResponseDto> comments;
 
-    public DetailResponseDto(CommunityEntity community, List<CommunityCommentResponseDto> comments) {
+    public DetailResponseDto(CommunityEntity community,  List<CommunityCommentResponseDto> comments) {
         this.id = community.getId();              
         this.uid = community.getUid();
+        this.nickname = community.getNickname();
+        this.tier = community.getTier();
         this.title = community.getTitle();
         this.startpoint = community.getStartpoint();
         this.distance = community.getDistance();
