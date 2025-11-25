@@ -1,6 +1,5 @@
 name: Deploy Spring Boot to EC2 (Ubuntu)
 
-
 on:
   push:
     branches: [ "main" ]

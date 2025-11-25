@@ -1,11 +1,14 @@
 package com.runpt.back.user.service.implement;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import com.runpt.back.global.dto.KakaoUserInfo;
 import com.runpt.back.global.dto.ResponseDto;
@@ -16,10 +19,13 @@ import com.runpt.back.user.dto.request.GetMyPageRequestDto;
 import com.runpt.back.user.dto.request.JoinRequestDto;
 import com.runpt.back.user.dto.request.KakaoLoginRequestDto;
 import com.runpt.back.user.dto.request.SaveRunningRequestDto;
+import com.runpt.back.user.dto.request.RunningToAIRequestDto;
+
 import com.runpt.back.user.dto.response.GetMyPageResponseDto;
 import com.runpt.back.user.dto.response.JoinResponseDto;
 import com.runpt.back.user.dto.response.KakaoLoginResponseDto;
 import com.runpt.back.user.dto.response.SaveRunningResponseDto;
+
 import com.runpt.back.user.entity.UserEntity;
 import com.runpt.back.user.repository.TierRepository;
 import com.runpt.back.user.repository.UserRepository;
@@ -45,47 +51,32 @@ public class UserServiceImplements implements UserService {
         String nickname = null;
 
         try {
-            String accessToken = dto.getAccessToken();
-            if (accessToken == null || accessToken.isEmpty()) {
-                System.out.println("[KAKAO LOGIN] accessToken is NULL");
+            if (dto.getAccessToken() == null || dto.getAccessToken().isEmpty()) {
                 return ResponseDto.badRequest();
             }
 
-            System.out.println("[KAKAO LOGIN] Received accessToken = " + accessToken);
-
-            // token → user info
-            KakaoUserInfo info = kakaoOauthHelper.getUserInfoFromToken(accessToken);
+            KakaoUserInfo info = kakaoOauthHelper.getUserInfoFromToken(dto.getAccessToken());
             if (info == null) {
-                System.out.println("[KAKAO LOGIN] KakaoUserInfo is NULL");
                 return KakaoLoginResponseDto.databaseError();
             }
 
             String kakaoId = info.getId();
             nickname = info.getNickname();
 
-            System.out.println("[KAKAO LOGIN] KakaoId = " + kakaoId);
-            System.out.println("[KAKAO LOGIN] Nickname = " + nickname);
-
-            UserEntity user = userRepository
-                    .findByOauthProviderAndOauthUid("kakao", kakaoId);
+            UserEntity user = userRepository.findByOauthProviderAndOauthUid("kakao", kakaoId);
 
             if (user == null) {
                 fresh = true;
-
                 user = new UserEntity();
                 user.setOauthProvider("kakao");
                 user.setOauthUid(kakaoId);
                 user.setNickname(nickname != null ? nickname : "닉네임 없음");
-
                 userRepository.save(user);
             }
 
             uid = user.getId();
 
-            System.out.println("[KAKAO LOGIN] Login Success → uid = " + uid);
-
         } catch (Exception e) {
-            System.out.println("[KAKAO LOGIN] ERROR: " + e.getMessage());
             e.printStackTrace();
             return ResponseDto.databaseError();
         }
@@ -96,67 +87,58 @@ public class UserServiceImplements implements UserService {
 
     @Override
     public ResponseEntity<? super JoinResponseDto> join(JoinRequestDto dto) {
-        UserEntity user = null;
+
         try {
-            user = userRepository.findById(dto.getUid());
-            if (user == null) {
-                System.out.println("[USER JOIN] User not found with uid: " + dto.getUid());
-                return ResponseDto.badRequest();
-            }
+            UserEntity user = userRepository.findById(dto.getUid());
+            if (user == null) return ResponseDto.badRequest();
+
             user.setNickname(dto.getNickname());
             user.setAge(dto.getAge());
             user.setGender("M");
             user.setHeight(dto.getHeight());
             user.setWeight(dto.getWeight());
             userRepository.save(user);
+
             TierEntity tier = new TierEntity(dto.getUid());
             tierRepository.save(tier);
-            
+
+            return JoinResponseDto.joinSuccess(user);
+
         } catch (Exception e) {
-            System.out.println("[USER JOIN] ERROR OCCURRED: " + e.getMessage());
             e.printStackTrace();
             return ResponseDto.databaseError();
         }
-
-        return JoinResponseDto.joinSuccess(user);
     }
+
 
     @Override
     public ResponseEntity<? super GetMyPageResponseDto> getMyPage(GetMyPageRequestDto dto) {
-        UserEntity user;
-        TierEntity tier;
-        List<RunningSessionEntity> recentRecords = new ArrayList<>();
         try {
-            user = userRepository.findById(dto.getUid());
-            if (user == null) {
-                System.out.println("[GET MY PAGE] User not found with uid: " + dto.getUid());
-                return ResponseDto.badRequest();
-            }
-            tier = tierRepository.findById(dto.getUid()).orElse(null);
-            // 전체 러닝 기록 가져오기
-            List<RunningSessionEntity> allRecords = runningSessionRepository.findByUidOrderByDateDesc(dto.getUid());
+            UserEntity user = userRepository.findById(dto.getUid());
+            if (user == null) return ResponseDto.badRequest();
 
-            // 최근 5개만 추출 (비어있으면 empty list 유지)
-            if (allRecords != null && !allRecords.isEmpty()) {
-                recentRecords = allRecords.stream()
-                        .limit(5)
-                        .collect(Collectors.toList());
-            }
-            
+            TierEntity tier = tierRepository.findByUid(dto.getUid());
+            List<RunningSessionEntity> list =
+                    runningSessionRepository.findByUidOrderByDateDesc(dto.getUid());
+
+            List<RunningSessionEntity> recent = list.stream()
+                    .limit(5)
+                    .collect(Collectors.toList());
+
+            return GetMyPageResponseDto.getMyPageSuccess(user, tier, recent);
+
         } catch (Exception e) {
-            System.out.println("[GET MY PAGE] ERROR OCCURRED: " + e.getMessage());
             e.printStackTrace();
             return ResponseDto.databaseError();
         }
-        
-        return GetMyPageResponseDto.getMyPageSuccess(user, tier, recentRecords);
     }
 
 
     @Override
     public ResponseEntity<? super SaveRunningResponseDto> saveRunning(SaveRunningRequestDto dto) {
-        
+
         try {
+            // 1) 러닝 기록 저장
             RunningSessionEntity session = new RunningSessionEntity();
             session.setUid(dto.getUid());
             session.setDistance(dto.getDistance());
@@ -166,46 +148,40 @@ public class UserServiceImplements implements UserService {
             session.setPace(dto.getPace());
             runningSessionRepository.save(session);
 
-            // 2. 이 유저의 TierEntity 조회 (회원가입 시 생성되어 있다고 가정)
+            // 2) 티어 엔티티 조회
             TierEntity tier = tierRepository.findByUid(dto.getUid());
             if (tier == null) {
-                // 이 상황은 원래 없어야 하지만, 혹시 모를 방어 코드
                 tier = new TierEntity(dto.getUid());
             }
 
-            // 3. 단거리 / 장거리 구분 (10km 이하: 단거리, 그 이상: 장거리)
-            boolean isShort = dto.getDistance() <= 10.0;
+            boolean isShort = dto.getDistance() <= 10000;
 
-            // 4. 이번 러닝의 티어 계산 (pace는 분/km)
+            // 3) 이번 러닝의 티어 계산 = 초 단위 페이스
             TierCalculator.Tier newTier = isShort
                     ? TierCalculator.calculateShortDistanceTier(dto.getPace())
                     : TierCalculator.calculateLongDistanceTier(dto.getPace());
 
-            int newBestTime = dto.getDurationSec(); // 초 단위 기록
+            // 4) best time = pace 로 저장
+            int newBestTime = dto.getPace();
 
-            // 5. 기존 티어/기록과 비교 후 갱신
             if (isShort) {
-                // 기존 단거리 티어 (null이면 아직 기록 없음으로 간주)
-                TierCalculator.Tier oldTier = tier.getShortTierRank() != null
-                        ? TierCalculator.Tier.valueOf(tier.getShortTierRank())
-                        : null;
 
-                // 5-1. 티어 갱신: 기존 티어가 없거나, 새 티어가 더 높으면 교체
+                TierCalculator.Tier oldTier = tier.getShortTierRank() != null
+                        ? TierCalculator.Tier.valueOf(tier.getShortTierRank()) : null;
+
                 if (oldTier == null ||
                         TierCalculator.getTierPriority(newTier) > TierCalculator.getTierPriority(oldTier)) {
                     tier.setShortTierRank(newTier.name());
                 }
 
-                // 5-2. 최고 기록 갱신: 0이면 아직 없음, 더 빠른 기록(시간이 더 작음)이면 교체
                 if (tier.getShortBestTime() == 0 || newBestTime < tier.getShortBestTime()) {
                     tier.setShortBestTime(newBestTime);
                 }
 
             } else {
-                // 기존 장거리 티어
+
                 TierCalculator.Tier oldTier = tier.getLongTierRank() != null
-                        ? TierCalculator.Tier.valueOf(tier.getLongTierRank())
-                        : null;
+                        ? TierCalculator.Tier.valueOf(tier.getLongTierRank()) : null;
 
                 if (oldTier == null ||
                         TierCalculator.getTierPriority(newTier) > TierCalculator.getTierPriority(oldTier)) {
@@ -217,14 +193,46 @@ public class UserServiceImplements implements UserService {
                 }
             }
 
-            // 6. 티어 정보 저장
             tierRepository.save(tier);
+
+            // 5) AI 서버로 러닝 데이터 전송
+            sendRunningToAi(dto);
+
         } catch (Exception e) {
-            System.out.println("[SAVE RUNNING] ERROR OCCURRED: " + e.getMessage());
             e.printStackTrace();
             return ResponseDto.databaseError();
         }
 
         return SaveRunningResponseDto.saveRunningSuccess();
+    }
+
+
+    private void sendRunningToAi(SaveRunningRequestDto dto) {
+        try {
+            String url = "http://13.124.197.160:8000/running/save";
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+
+            RunningToAIRequestDto aiDto = new RunningToAIRequestDto(
+                    dto.getUid(),
+                    dto.getDate().toString(),
+                    dto.getDistance(),
+                    String.valueOf(dto.getPace()),
+                    dto.getDurationSec(),
+                    dto.getHeartRateAvg()
+            );
+
+            HttpEntity<RunningToAIRequestDto> entity = new HttpEntity<>(aiDto, headers);
+            RestTemplate rt = new RestTemplate();
+
+            String res = rt.postForObject(url, entity, String.class);
+
+            System.out.println("[AI RUNNING SEND] SUCCESS → " + res);
+
+        } catch (Exception e) {
+            System.out.println("[AI RUNNING SEND] ERROR: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 }

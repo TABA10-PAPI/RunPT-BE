@@ -17,7 +17,7 @@ public class RunningSessionEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false, unique = false)
     private Long uid;
 
     @Column(nullable = false)

@@ -14,12 +14,12 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/auth")
+@RequestMapping("/user")
 public class UserController {
     private final UserService userService;
 
     // 🔥 카카오 로그인 + 자동 회원가입 통합 API
-    @PostMapping("/kakao")
+    @PostMapping("/kakao-login")
     public ResponseEntity<? super KakaoLoginResponseDto> kakaoAuth(
             @RequestBody KakaoLoginRequestDto requestBody
     ) {
@@ -40,7 +40,7 @@ public class UserController {
         return userService.getMyPage(requestBody);
     }
 
-    @PostMapping("/saeve-running")
+    @PostMapping("/save-running")
     public ResponseEntity<? super SaveRunningResponseDto> saveRunning(
         @RequestBody SaveRunningRequestDto requestBody
     ) {
