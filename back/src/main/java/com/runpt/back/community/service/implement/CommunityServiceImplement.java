@@ -14,6 +14,9 @@ import com.runpt.back.community.repository.CommentRepository;
 import com.runpt.back.community.repository.CommunityRepository;
 import com.runpt.back.community.service.CommunityService;
 import com.runpt.back.global.dto.ResponseDto;
+import com.runpt.back.user.repository.TierRepository;
+import com.runpt.back.user.repository.UserRepository;
+import com.runpt.back.user.entity.TierEntity;
 
 import lombok.RequiredArgsConstructor;
 
@@ -23,21 +26,20 @@ public class CommunityServiceImplement implements CommunityService{
 
     private final CommunityRepository communityRepository;
     private final CommentRepository commentRepository;
-    //private final UserRepository userRepository;
-    //private final TierRepository tierRepository;
+    private final UserRepository userRepository;
+    private final TierRepository tierRepository;
 
     @Override
     public ResponseEntity<? super PostResponseDto> post(PostRequestDto dto) {
         try {
             Long uid = dto.getUid();
 
-            String nickname = "june";/*userRepository.findByUid(uid)
-                        .map(USerEntity::getNickname)
-                        .orElse("알 수 없음");*/
+            String nickname = userRepository.findById(uid)
+                .map(user -> user.getNickname())
+                .orElse("알 수 없음");
 
-            String tier = "silver"; /*tierRepository.findTopByUidOrderByCreatedAtDesc(uid)
-                .map(TierEntity::getTier)
-                .orElse("UNRANKED");*/
+            TierEntity tierEntity = tierRepository.findByUid(uid);
+            String tier = (tierEntity != null) ? tierEntity.getShortTierRank() : "UNRANKED";
 
             LocalDateTime t = LocalDateTime.now();
             CommunityEntity entity = new CommunityEntity(dto, t, nickname, tier);
@@ -100,13 +102,12 @@ public class CommunityServiceImplement implements CommunityService{
                 .map(comment -> {
                     Long uid = comment.getUid();
                     
-                    String nickname = "june";/*userRepository.findByUid(uid)
-                        .map(UserEntity::getNickname)
-                        .orElse("알 수 없음");*/
+                    String nickname = userRepository.findById(uid)
+                        .map(user -> user.getNickname())
+                        .orElse("알 수 없음");
 
-                    String tier = "silver"; /*tierRepository.findTopByUidOrderByCreatedAtDesc(uid)
-                        .map(TierEntity::getTier)
-                        .orElse("UNRANKED");*/
+                    TierEntity tierentity = tierRepository.findByUid(uid);
+                    String tier = (tierentity != null) ? tierentity.getShortTierRank() : "UNRANKED"; 
 
                     return new CommunityCommentResponseDto(comment, nickname, tier);
                 })

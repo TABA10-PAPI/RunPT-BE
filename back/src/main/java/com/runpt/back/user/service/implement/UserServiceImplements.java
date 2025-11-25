@@ -4,8 +4,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import com.runpt.back.global.dto.KakaoUserInfo;
 import com.runpt.back.global.dto.ResponseDto;
@@ -26,6 +30,7 @@ import com.runpt.back.user.repository.UserRepository;
 import com.runpt.back.user.repository.RunningSessionRepository;
 import com.runpt.back.user.service.UserService;
 import com.runpt.back.user.util.TierCalculator;
+import com.runpt.back.user.dto.request.RunningToAIRequestDto;
 
 import lombok.RequiredArgsConstructor;
 
@@ -219,6 +224,9 @@ public class UserServiceImplements implements UserService {
 
             // 6. 티어 정보 저장
             tierRepository.save(tier);
+
+            //AI에 전송
+            sendRunningToAi(dto);
         } catch (Exception e) {
             System.out.println("[SAVE RUNNING] ERROR OCCURRED: " + e.getMessage());
             e.printStackTrace();
@@ -227,4 +235,39 @@ public class UserServiceImplements implements UserService {
 
         return SaveRunningResponseDto.saveRunningSuccess();
     }
+
+    private void sendRunningToAi(SaveRunningRequestDto dto) {
+    try {
+        String url = "http://13.124.197.160:8000/running";
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        // pace(초) → 문자열 형태로 변환
+        String paceString = String.valueOf(dto.getPace());
+
+        // AI 요청 DTO 생성
+        RunningToAIRequestDto aiDto = new RunningToAIRequestDto(
+                dto.getUid(),
+                dto.getDate().toString(),
+                dto.getDistance(),
+                paceString,
+                dto.getDurationSec(),
+                dto.getHeartRateAvg()
+        );
+
+        HttpEntity<RunningToAIRequestDto> req = new HttpEntity<>(aiDto, headers);
+
+        RestTemplate rt = new RestTemplate();
+        String aiResponse = rt.postForObject(url, req, String.class);
+
+        System.out.println("[AI RUNNING SEND] SUCCESS");
+        System.out.println(aiResponse);
+
+    } catch (Exception e) {
+        System.out.println("[AI RUNNING SEND] ERROR: " + e.getMessage());
+        e.printStackTrace();
+    }
+}
+
 }
