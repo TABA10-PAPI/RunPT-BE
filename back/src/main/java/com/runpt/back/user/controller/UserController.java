@@ -40,7 +40,7 @@ public class UserController {
         return userService.getMyPage(requestBody);
     }
 
-    @PostMapping("/saeve-running")
+    @PostMapping("/save-running")
     public ResponseEntity<? super SaveRunningResponseDto> saveRunning(
         @RequestBody SaveRunningRequestDto requestBody
     ) {
