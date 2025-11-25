@@ -174,7 +174,7 @@ public class UserServiceImplements implements UserService {
             }
 
             // 3. 단거리 / 장거리 구분 (10km 이하: 단거리, 그 이상: 장거리)
-            boolean isShort = dto.getDistance() <= 10.0;
+            boolean isShort = dto.getDistance() <= 10000;
 
             // 4. 이번 러닝의 티어 계산 (pace는 분/km)
             TierCalculator.Tier newTier = isShort
