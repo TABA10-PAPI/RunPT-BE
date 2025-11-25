@@ -12,9 +12,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.runpt.back.ai.entity.BatteryEntity;
 import com.runpt.back.ai.repository.BatteryRepository;
 import com.runpt.back.global.dto.ResponseDto;
-import com.runpt.back.running.dto.request.RunningRequestDto;
-import com.runpt.back.running.dto.response.RunningRecommendationDto;
-import com.runpt.back.running.dto.response.RunningResponseDto;
+import com.runpt.back.running.dto.request.*;
+import com.runpt.back.running.dto.response.*;
+import com.runpt.back.running.dto.response.BatteryResponseDto.RecommendationDto;
 import com.runpt.back.running.service.RunningService;
 
 import lombok.RequiredArgsConstructor;
@@ -64,6 +64,32 @@ public class RunningServiceImplement implements RunningService {
             return ResponseDto.databaseError();
         }
         return RunningResponseDto.success(uid, date, recommendations);
+    }
+
+    @Override
+    public ResponseEntity<? super BatteryResponseDto> getBattery(BatteryRequestDto dto) {
+        float battery = 0;
+        List<RecommendationDto> recommendations = null;
+        try {
+            BatteryEntity entity = batteryRepository.findByUidAndDate(dto.getUid(), dto.getDate())
+                    .orElseThrow(() -> new RuntimeException("해당 날짜 데이터 없음"));
+
+            // JSON 파싱
+            recommendations = Collections.emptyList();
+            if (entity.getRecommendationsJson() != null) {
+                recommendations = objectMapper.readValue(
+                        entity.getRecommendationsJson(),
+                        new TypeReference<List<RecommendationDto>>() {}
+                );
+            }
+            
+            battery = entity.getBattery();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseDto.databaseError();
+        }
+        return BatteryResponseDto.success(battery, recommendations);
     }
 }
 

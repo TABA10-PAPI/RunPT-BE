@@ -23,20 +23,20 @@ public class CommunityServiceImplement implements CommunityService{
 
     private final CommunityRepository communityRepository;
     private final CommentRepository commentRepository;
-    //private final ProfileRepository profileRepository;
-    //private final TierRecordRepository tierRecordRepository;
+    //private final UserRepository userRepository;
+    //private final TierRepository tierRepository;
 
     @Override
     public ResponseEntity<? super PostResponseDto> post(PostRequestDto dto) {
         try {
             Long uid = dto.getUid();
 
-            String nickname = "june";/*profileRepository.findByUid(uid)
-                        .map(ProfileEntity::getNickname)
+            String nickname = "june";/*userRepository.findByUid(uid)
+                        .map(USerEntity::getNickname)
                         .orElse("알 수 없음");*/
 
-            String tier = "silver"; /*tierRecordRepository.findTopByUidOrderByCreatedAtDesc(uid)
-                .map(TierRecordEntity::getTier)
+            String tier = "silver"; /*tierRepository.findTopByUidOrderByCreatedAtDesc(uid)
+                .map(TierEntity::getTier)
                 .orElse("UNRANKED");*/
 
             LocalDateTime t = LocalDateTime.now();
@@ -56,13 +56,13 @@ public class CommunityServiceImplement implements CommunityService{
         List<CommunityEntity> entityList = null;
         try {
             // 1. uid 로 프로필 찾기
-            //ProfileEntity profile = profileRepository.findByUid(request.getUid());
-            //if (profile == null) {
+            //UserEntity user = userRepository.findByUid(request.getUid());
+            //if (user == null) {
             //throw new RuntimeException("프로필을 찾을 수 없습니다.");
             //}
 
             // 2. 성별 가져오기
-            String userGender = "MALE"; //profile.getGender();   // "MALE", "FEMALE"
+            String userGender = "MALE"; //user.getGender();   // "MALE", "FEMALE"
 
             // 3. 필터링 조건 만들기
             List<String> genderFilter;
@@ -75,8 +75,8 @@ public class CommunityServiceImplement implements CommunityService{
                 genderFilter = List.of("ALL");
             }
 
-            // 4. 게시글 조회
-            entityList = communityRepository.findByTargetgenderIn(genderFilter);
+            // 4. 게시글 조회, 최근 만들어진 게시물 부터 나오게
+            entityList = communityRepository.findByTargetgenderInOrderByCreateAtDesc(genderFilter);
         } catch (Exception e) {
             
         }
@@ -100,12 +100,12 @@ public class CommunityServiceImplement implements CommunityService{
                 .map(comment -> {
                     Long uid = comment.getUid();
                     
-                    String nickname = "june";/*profileRepository.findByUid(uid)
-                        .map(ProfileEntity::getNickname)
+                    String nickname = "june";/*userRepository.findByUid(uid)
+                        .map(UserEntity::getNickname)
                         .orElse("알 수 없음");*/
 
-                    String tier = "silver"; /*tierRecordRepository.findTopByUidOrderByCreatedAtDesc(uid)
-                        .map(TierRecordEntity::getTier)
+                    String tier = "silver"; /*tierRepository.findTopByUidOrderByCreatedAtDesc(uid)
+                        .map(TierEntity::getTier)
                         .orElse("UNRANKED");*/
 
                     return new CommunityCommentResponseDto(comment, nickname, tier);

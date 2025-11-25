@@ -8,5 +8,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface CommunityRepository extends JpaRepository<CommunityEntity, Long>{
     
-    List<CommunityEntity> findByTargetgenderIn(List<String> genders);
+    List<CommunityEntity> findByTargetgenderInOrderByCreateAtDesc(List<String> genders);
 }
