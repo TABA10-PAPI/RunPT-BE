@@ -17,24 +17,30 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Configure SSH
-        run: |
-          echo "$EC2_KEY" > key.pem
-          chmod 600 key.pem
+      # Gradle 권한 추가
+      - name: Grant execute permission for Gradle
+        run: chmod +x back/gradlew
 
+      # Spring Boot JAR 빌드
+      - name: Build Spring Boot App
+        run: |
+          cd back
+          ./gradlew clean build -x test
+
+      # EC2로 JAR 업로드
       - name: Upload JAR to EC2
         run: |
           scp -o StrictHostKeyChecking=no -i key.pem \
-            ./back-0.0.1-SNAPSHOT.jar \
+            back/build/libs/*.jar \
             ${EC2_USER}@${EC2_HOST}:/home/ubuntu/app/
 
+      # 서비스 파일 생성
       - name: Create systemd service file on EC2
         run: |
           ssh -o StrictHostKeyChecking=no -i key.pem ${EC2_USER}@${EC2_HOST} "
             echo '[Unit]' | sudo tee /etc/systemd/system/runpt.service > /dev/null
             echo 'Description=RunPT Spring Boot Application' | sudo tee -a /etc/systemd/system/runpt.service
             echo 'After=network.target' | sudo tee -a /etc/systemd/system/runpt.service
-            echo '' | sudo tee -a /etc/systemd/system/runpt.service
 
             echo '[Service]' | sudo tee -a /etc/systemd/system/runpt.service
             echo 'Environment=\"DB_END_POINT=${{ secrets.DB_END_POINT }}\"' | sudo tee -a /etc/systemd/system/runpt.service
@@ -48,7 +54,6 @@ jobs:
             echo 'Restart=always' | sudo tee -a /etc/systemd/system/runpt.service
             echo 'User=ubuntu' | sudo tee -a /etc/systemd/system/runpt.service
 
-            echo '' | sudo tee -a /etc/systemd/system/runpt.service
             echo '[Install]' | sudo tee -a /etc/systemd/system/runpt.service
             echo 'WantedBy=multi-user.target' | sudo tee -a /etc/systemd/system/runpt.service
           "
