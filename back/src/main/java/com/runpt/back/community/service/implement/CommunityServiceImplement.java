@@ -149,6 +149,19 @@ public class CommunityServiceImplement implements CommunityService{
         Long id = dto.getId();
         
         try {
+
+            // CommunityEntity entity = communityRepository.findById(id);
+            // if(entity == null){
+            //     return DeleteResponseDto.notFound();
+            // }
+
+            // Long Cid = entity.getId();
+            // if(Cid != uid){
+            //     return DeleteResponseDto.fail(); 
+            // }
+
+            // commentRepository.deleteById(id);
+
             boolean exists = communityRepository.existsByUidAndId(uid, id);
 
             /*예외처리 할 코드if (!exists){
