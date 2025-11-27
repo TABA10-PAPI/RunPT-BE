@@ -40,24 +40,24 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=no -i key.pem ${EC2_USER}@${EC2_HOST} "
             sudo bash -c '
-              echo \"[Unit]\" > /etc/systemd/system/runpt.service
-              echo \"Description=RunPT Spring Boot Application\" >> /etc/systemd/system/runpt.service
-              echo \"After=network.target\" >> /etc/systemd/system/runpt.service
+              echo "[Unit]" > /etc/systemd/system/runpt.service
+              echo "Description=RunPT Spring Boot Application" >> /etc/systemd/system/runpt.service
+              echo "After=network.target" >> /etc/systemd/system/runpt.service
 
-              echo \"[Service]\" >> /etc/systemd/system/runpt.service
-              echo \"Environment=DB_END_POINT=${{ secrets.DB_END_POINT }}\" >> /etc/systemd/system/runpt.service
-              echo \"Environment=DB_USER_NAME=${{ secrets.DB_USER_NAME }}\" >> /etc/systemd/system/runpt.service
-              echo \"Environment=DB_PASSWORD=${{ secrets.DB_PASSWORD }}\" >> /etc/systemd/system/runpt.service
-              echo \"Environment=DB_DRIVER_CLASS_NAME=com.mysql.cj.jdbc.Driver\" >> /etc/systemd/system/runpt.service
-              echo \"Environment=JWT_SECRET=${{ secrets.JWT_SECRET }}\" >> /etc/systemd/system/runpt.service
+              echo "[Service]" >> /etc/systemd/system/runpt.service
+              echo "Environment=DB_END_POINT=${{ secrets.DB_END_POINT }}" >> /etc/systemd/system/runpt.service
+              echo "Environment=DB_USER_NAME=${{ secrets.DB_USER_NAME }}" >> /etc/systemd/system/runpt.service
+              echo "Environment=DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> /etc/systemd/system/runpt.service
+              echo "Environment=DB_DRIVER_CLASS_NAME=com.mysql.cj.jdbc.Driver" >> /etc/systemd/system/runpt.service
+              echo "Environment=JWT_SECRET=${{ secrets.JWT_SECRET }}" >> /etc/systemd/system/runpt.service
 
-              echo \"WorkingDirectory=/home/ubuntu/app\" >> /etc/systemd/system/runpt.service
-              echo \"ExecStart=/usr/bin/java -jar /home/ubuntu/app/back-0.0.1-SNAPSHOT.jar\" >> /etc/systemd/system/runpt.service
-              echo \"Restart=always\" >> /etc/systemd/system/runpt.service
-              echo \"User=ubuntu\" >> /etc/systemd/system/runpt.service
+              echo "WorkingDirectory=/home/ubuntu/app" >> /etc/systemd/system/runpt.service
+              echo "ExecStart=/usr/bin/java -jar /home/ubuntu/app/back-0.0.1-SNAPSHOT.jar" >> /etc/systemd/system/runpt.service
+              echo "Restart=always" >> /etc/systemd/system/runpt.service
+              echo "User=ubuntu" >> /etc/systemd/system/runpt.service
 
-              echo \"[Install]\" >> /etc/systemd/system/runpt.service
-              echo \"WantedBy=multi-user.target\" >> /etc/systemd/system/runpt.service
+              echo "[Install]" >> /etc/systemd/system/runpt.service
+              echo "WantedBy=multi-user.target" >> /etc/systemd/system/runpt.service
             '
           "
 
