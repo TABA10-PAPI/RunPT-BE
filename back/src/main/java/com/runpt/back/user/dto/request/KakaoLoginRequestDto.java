@@ -7,4 +7,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class KakaoLoginRequestDto {
     private String accessToken;
+    private String date;
 }

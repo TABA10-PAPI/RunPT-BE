@@ -7,16 +7,16 @@ import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.runpt.back.ai.entity.BatteryEntity;
-import com.runpt.back.ai.repository.BatteryRepository;
 import com.runpt.back.global.dto.ResponseDto;
 import com.runpt.back.home.dto.request.HomeRequestDto;
 import com.runpt.back.home.dto.response.HomeRecommendationDto;
 import com.runpt.back.home.dto.response.HomeResponseDto;
 import com.runpt.back.home.service.HomeService;
+import com.runpt.back.user.entity.BatteryEntity;
 import com.runpt.back.user.entity.RunningSessionEntity;
 import com.runpt.back.user.entity.TierEntity;
 import com.runpt.back.user.entity.UserEntity;
+import com.runpt.back.user.repository.BatteryRepository;
 import com.runpt.back.user.repository.RunningSessionRepository;
 import com.runpt.back.user.repository.TierRepository;
 import com.runpt.back.user.repository.UserRepository;

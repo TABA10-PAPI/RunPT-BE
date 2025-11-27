@@ -1,4 +1,4 @@
-package com.runpt.back.ai.entity;
+package com.runpt.back.user.entity;
 
 import jakarta.persistence.*;
 import lombok.*;

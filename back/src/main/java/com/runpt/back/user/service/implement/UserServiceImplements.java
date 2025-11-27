@@ -10,11 +10,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.runpt.back.global.dto.KakaoUserInfo;
 import com.runpt.back.global.dto.ResponseDto;
 import com.runpt.back.global.helper.KakaoOauthHelper;
+import com.runpt.back.user.entity.BatteryEntity;
 import com.runpt.back.user.entity.RunningSessionEntity;
 import com.runpt.back.user.entity.TierEntity;
+import com.runpt.back.user.dto.request.BatteryToAiRequestDto;
 import com.runpt.back.user.dto.request.GetMyPageRequestDto;
 import com.runpt.back.user.dto.request.JoinRequestDto;
 import com.runpt.back.user.dto.request.KakaoLoginRequestDto;
@@ -29,6 +32,7 @@ import com.runpt.back.user.dto.response.SaveRunningResponseDto;
 import com.runpt.back.user.entity.UserEntity;
 import com.runpt.back.user.repository.TierRepository;
 import com.runpt.back.user.repository.UserRepository;
+import com.runpt.back.user.repository.BatteryRepository;
 import com.runpt.back.user.repository.RunningSessionRepository;
 import com.runpt.back.user.service.UserService;
 import com.runpt.back.user.util.TierCalculator;
@@ -42,7 +46,9 @@ public class UserServiceImplements implements UserService {
     private final UserRepository userRepository;
     private final TierRepository tierRepository;
     private final RunningSessionRepository runningSessionRepository;
+    private final BatteryRepository batteryRepository;
     private final KakaoOauthHelper kakaoOauthHelper;
+
 
     @Override
     public ResponseEntity<? super KakaoLoginResponseDto> kakaoLogin(KakaoLoginRequestDto dto) {
@@ -75,6 +81,8 @@ public class UserServiceImplements implements UserService {
             }
 
             uid = user.getId();
+
+            getBatteryInfo(uid, dto.getDate());
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -232,6 +240,71 @@ public class UserServiceImplements implements UserService {
 
         } catch (Exception e) {
             System.out.println("[AI RUNNING SEND] ERROR: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+    // AI 서버에서 배터리 정보 받아와서 DB에 저장 + 엔티티 반환
+    private void getBatteryInfo(Long uid, String date) {
+        System.out.println("===== [AI BATTERY REQUEST START] =====");
+        System.out.println("UID = " + uid);
+        System.out.println("DATE = " + date);
+
+        try {
+            // 1) 외부 AI URL
+            String url = "http://13.124.197.160:8000/battery";
+
+            // 2) HTTP 헤더 설정
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+
+            // 3) 요청 바디 DTO 생성
+            BatteryToAiRequestDto dto = new BatteryToAiRequestDto(uid, date);
+
+            // 4) HttpEntity 생성
+            HttpEntity<BatteryToAiRequestDto> req = new HttpEntity<>(dto, headers);
+
+            // 5) RestTemplate 생성 후 호출
+            RestTemplate rt = new RestTemplate();
+            JsonNode aiRes = rt.postForObject(url, req, JsonNode.class);
+
+            System.out.println("---- AI RAW RESPONSE ----");
+            System.out.println(aiRes == null ? "NULL RESPONSE" : aiRes.toPrettyString());
+
+            if (aiRes == null) {
+                throw new RuntimeException("AI 응답이 NULL입니다.");
+            }
+
+            // 6) JSON 파싱
+            if (!aiRes.has("battery_score")) {
+                throw new RuntimeException("AI 응답에 battery_score 필드가 없습니다.");
+            }
+            float battery = aiRes.get("battery_score").floatValue();
+
+            JsonNode recNode = aiRes.get("recommendations");
+            if (recNode == null || !recNode.isArray()) {
+                throw new RuntimeException("AI 응답에 recommendations 배열이 없습니다.");
+            }
+
+            String recommendationsJson = recNode.toString();
+
+            // 7) DB UPSERT
+            BatteryEntity entity = batteryRepository.findByUid(uid);
+            if (entity == null) {
+                entity = new BatteryEntity();
+                entity.setUid(uid);
+                entity.setDate(date);
+                
+            }
+
+
+            entity.setBattery(battery);
+            entity.setRecommendationsJson(recommendationsJson);
+
+            batteryRepository.save(entity);
+
+        } catch (Exception e) {
+            System.out.println("===== [AI BATTERY ERROR OCCURRED] =====");
+            System.out.println("ERROR: " + e.getMessage());
             e.printStackTrace();
         }
     }

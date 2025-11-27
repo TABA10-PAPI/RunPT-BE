@@ -9,13 +9,13 @@ import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.runpt.back.ai.entity.BatteryEntity;
-import com.runpt.back.ai.repository.BatteryRepository;
 import com.runpt.back.global.dto.ResponseDto;
 import com.runpt.back.running.dto.request.*;
 import com.runpt.back.running.dto.response.*;
 import com.runpt.back.running.dto.response.BatteryResponseDto.RecommendationDto;
 import com.runpt.back.running.service.RunningService;
+import com.runpt.back.user.entity.BatteryEntity;
+import com.runpt.back.user.repository.BatteryRepository;
 
 import lombok.RequiredArgsConstructor;
 
