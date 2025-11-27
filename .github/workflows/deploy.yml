@@ -17,45 +17,48 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Gradle 권한 추가
+      - name: Configure SSH
+        run: |
+          echo "$EC2_KEY" > key.pem
+          chmod 600 key.pem
+
       - name: Grant execute permission for Gradle
         run: chmod +x back/gradlew
 
-      # Spring Boot JAR 빌드
       - name: Build Spring Boot App
         run: |
           cd back
           ./gradlew clean build -x test
 
-      # EC2로 JAR 업로드
       - name: Upload JAR to EC2
         run: |
           scp -o StrictHostKeyChecking=no -i key.pem \
             back/build/libs/*.jar \
             ${EC2_USER}@${EC2_HOST}:/home/ubuntu/app/
 
-      # 서비스 파일 생성
       - name: Create systemd service file on EC2
         run: |
           ssh -o StrictHostKeyChecking=no -i key.pem ${EC2_USER}@${EC2_HOST} "
-            echo '[Unit]' | sudo tee /etc/systemd/system/runpt.service > /dev/null
-            echo 'Description=RunPT Spring Boot Application' | sudo tee -a /etc/systemd/system/runpt.service
-            echo 'After=network.target' | sudo tee -a /etc/systemd/system/runpt.service
+            sudo bash -c '
+              echo \"[Unit]\" > /etc/systemd/system/runpt.service
+              echo \"Description=RunPT Spring Boot Application\" >> /etc/systemd/system/runpt.service
+              echo \"After=network.target\" >> /etc/systemd/system/runpt.service
 
-            echo '[Service]' | sudo tee -a /etc/systemd/system/runpt.service
-            echo 'Environment=\"DB_END_POINT=${{ secrets.DB_END_POINT }}\"' | sudo tee -a /etc/systemd/system/runpt.service
-            echo 'Environment=\"DB_USER_NAME=${{ secrets.DB_USER_NAME }}\"' | sudo tee -a /etc/systemd/system/runpt.service
-            echo 'Environment=\"DB_PASSWORD=${{ secrets.DB_PASSWORD }}\"' | sudo tee -a /etc/systemd/system/runpt.service
-            echo 'Environment=\"DB_DRIVER_CLASS_NAME=com.mysql.cj.jdbc.Driver\"' | sudo tee -a /etc/systemd/system/runpt.service
-            echo 'Environment=\"JWT_SECRET=${{ secrets.JWT_SECRET }}\"' | sudo tee -a /etc/systemd/system/runpt.service
+              echo \"[Service]\" >> /etc/systemd/system/runpt.service
+              echo \"Environment=DB_END_POINT=${{ secrets.DB_END_POINT }}\" >> /etc/systemd/system/runpt.service
+              echo \"Environment=DB_USER_NAME=${{ secrets.DB_USER_NAME }}\" >> /etc/systemd/system/runpt.service
+              echo \"Environment=DB_PASSWORD=${{ secrets.DB_PASSWORD }}\" >> /etc/systemd/system/runpt.service
+              echo \"Environment=DB_DRIVER_CLASS_NAME=com.mysql.cj.jdbc.Driver\" >> /etc/systemd/system/runpt.service
+              echo \"Environment=JWT_SECRET=${{ secrets.JWT_SECRET }}\" >> /etc/systemd/system/runpt.service
 
-            echo 'WorkingDirectory=/home/ubuntu/app' | sudo tee -a /etc/systemd/system/runpt.service
-            echo 'ExecStart=/usr/bin/java -jar /home/ubuntu/app/back-0.0.1-SNAPSHOT.jar' | sudo tee -a /etc/systemd/system/runpt.service
-            echo 'Restart=always' | sudo tee -a /etc/systemd/system/runpt.service
-            echo 'User=ubuntu' | sudo tee -a /etc/systemd/system/runpt.service
+              echo \"WorkingDirectory=/home/ubuntu/app\" >> /etc/systemd/system/runpt.service
+              echo \"ExecStart=/usr/bin/java -jar /home/ubuntu/app/back-0.0.1-SNAPSHOT.jar\" >> /etc/systemd/system/runpt.service
+              echo \"Restart=always\" >> /etc/systemd/system/runpt.service
+              echo \"User=ubuntu\" >> /etc/systemd/system/runpt.service
 
-            echo '[Install]' | sudo tee -a /etc/systemd/system/runpt.service
-            echo 'WantedBy=multi-user.target' | sudo tee -a /etc/systemd/system/runpt.service
+              echo \"[Install]\" >> /etc/systemd/system/runpt.service
+              echo \"WantedBy=multi-user.target\" >> /etc/systemd/system/runpt.service
+            '
           "
 
       - name: Reload and Restart Service
