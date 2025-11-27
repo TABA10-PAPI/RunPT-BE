@@ -31,10 +31,10 @@ public class CommunityController {
     }
     
     @PostMapping("/home")
-    public ResponseEntity<? super HomeResponseDto> home(
-        @RequestBody HomeRequestDto requestBody) {
+    public ResponseEntity<? super CommunityHomeResponseDto> home(
+        @RequestBody CommunityHomeRequestDto requestBody) {
 
-        ResponseEntity<? super HomeResponseDto> response = communityService.getList(requestBody);
+        ResponseEntity<? super CommunityHomeResponseDto> response = communityService.getList(requestBody);
 
     return ResponseEntity.ok(response);
     }
@@ -81,5 +81,15 @@ public class CommunityController {
         return response;
     }
 
+    @PostMapping("/participate")
+    public ResponseEntity<? super ParticipateResponseDto> participate(
+            @RequestBody @Valid ParticipateRequestDto requestBody
+    ) {
+
+        ResponseEntity<? super ParticipateResponseDto> response =
+                communityService.participate(requestBody);
+
+        return response;
+    }
     
 }

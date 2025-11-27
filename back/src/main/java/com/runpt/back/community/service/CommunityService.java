@@ -6,10 +6,11 @@ import com.runpt.back.community.dto.response.*;
 
 public interface CommunityService{
     ResponseEntity<? super PostResponseDto> post(PostRequestDto dto);
-    ResponseEntity<? super HomeResponseDto> getList(HomeRequestDto dto);
+    ResponseEntity<? super CommunityHomeResponseDto> getList(CommunityHomeRequestDto dto);
     ResponseEntity<? super DetailResponseDto> getDetail(DetailRequestDto dto);
     ResponseEntity<? super CommentResponseDto> writeComment(CommentRequestDto dto);
     ResponseEntity<? super DeleteResponseDto> delete(DeleteRequestDto dto);
     ResponseEntity<? super ModifyResponseDto> modify(ModifyRequestDto dto);
+    ResponseEntity<? super ParticipateResponseDto> participate(ParticipateRequestDto dto);
 
 }

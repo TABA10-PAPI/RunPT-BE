@@ -17,11 +17,11 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class HomeResponseDto extends ResponseDto{
+public class CommunityHomeResponseDto extends ResponseDto{
     List<CommunityEntity> communitys;
 
-    public static ResponseEntity<? super HomeResponseDto> success(List<CommunityEntity> entityList){
-        HomeResponseDto responseBody = new HomeResponseDto(entityList);
+    public static ResponseEntity<? super CommunityHomeResponseDto> success(List<CommunityEntity> entityList){
+        CommunityHomeResponseDto responseBody = new CommunityHomeResponseDto(entityList);
         return ResponseEntity.status(HttpStatus.OK).body(responseBody);
     }
 }

@@ -10,8 +10,10 @@ import com.runpt.back.community.dto.request.*;
 import com.runpt.back.community.dto.response.*;
 import com.runpt.back.community.entity.CommentEntity;
 import com.runpt.back.community.entity.CommunityEntity;
+import com.runpt.back.community.entity.ParticipateEntity;
 import com.runpt.back.community.repository.CommentRepository;
 import com.runpt.back.community.repository.CommunityRepository;
+import com.runpt.back.community.repository.ParticipateRepository;
 import com.runpt.back.community.service.CommunityService;
 import com.runpt.back.global.dto.ResponseDto;
 import com.runpt.back.user.repository.TierRepository;
@@ -32,6 +34,7 @@ public class CommunityServiceImplement implements CommunityService{
     private final CommentRepository commentRepository;
     private final UserRepository userRepository;
     private final TierRepository tierRepository;
+    private final ParticipateRepository participaterepository;
 
     @Override
     public ResponseEntity<? super PostResponseDto> post(PostRequestDto dto) {
@@ -58,7 +61,7 @@ public class CommunityServiceImplement implements CommunityService{
 
 
     @Override
-    public ResponseEntity<? super HomeResponseDto> getList(HomeRequestDto dto) {
+    public ResponseEntity<? super CommunityHomeResponseDto> getList(CommunityHomeRequestDto dto) {
         List<CommunityEntity> entityList = null;
         try {
             Long uid = dto.getUid();
@@ -85,7 +88,7 @@ public class CommunityServiceImplement implements CommunityService{
         } catch (Exception e) {
             
         }
-        return HomeResponseDto.success(entityList);
+        return CommunityHomeResponseDto.success(entityList);
     }
 
     @Override
@@ -205,6 +208,32 @@ public class CommunityServiceImplement implements CommunityService{
             return ResponseDto.databaseError();
         }
         return ModifyResponseDto.success();
+    }
+
+    public ResponseEntity<? super ParticipateResponseDto> participate(ParticipateRequestDto dto){
+        
+        Long uid = dto.getUid();
+        Long communityid = dto.getCommunityid();
+        try {
+            /*ParticipateEntity origin = participaterepository.findByUidAndCommunityid(uid, communityid);
+            if(origin != null){
+
+            }*/
+
+            String nickname = userRepository.findById(uid)
+                .map(user -> user.getNickname())
+                .orElse("알 수 없음");
+
+            TierEntity tierEntity = tierRepository.findByUid(uid);
+            String tier = (tierEntity != null) ? tierEntity.getShortTierRank() : "UNRANKED";
+
+            ParticipateEntity entity = new ParticipateEntity(dto, nickname, tier);
+            participaterepository.save(entity);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseDto.databaseError();
+        }
+        return ParticipateResponseDto.success();
     }
 }
     
