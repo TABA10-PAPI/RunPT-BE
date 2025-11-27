@@ -16,6 +16,9 @@ import com.runpt.back.community.service.CommunityService;
 import com.runpt.back.global.dto.ResponseDto;
 import com.runpt.back.user.repository.TierRepository;
 import com.runpt.back.user.repository.UserRepository;
+
+import jakarta.transaction.Transactional;
+
 import com.runpt.back.user.entity.TierEntity;
 import com.runpt.back.user.entity.UserEntity;
 
@@ -137,6 +140,59 @@ public class CommunityServiceImplement implements CommunityService{
             return ResponseDto.databaseError();
         }
         return CommentResponseDto.success();
+    }
+
+    @Transactional
+    @Override
+    public ResponseEntity<? super DeleteResponseDto> delete(DeleteRequestDto dto){
+        Long uid = dto.getUid();
+        Long id = dto.getId();
+        
+        try {
+            boolean exists = communityRepository.existsByUidAndId(uid, id);
+
+            /*예외처리 할 코드if (!exists){
+                return DeleteResponseDto.notFound();
+            }*/
+
+            long deleteCount = communityRepository.deleteByUidAndId(uid, id);
+
+            /*예외처리 할 코드 if(deleteCount == 0){
+                return DeleteResponseDto.notFound();
+            }*/
+            long communityComments = commentRepository.deleteAllByCommunityid(id);
+            /*예외처리 할 코드 if (communityComments == 0){
+                return DeleteResponseDto.noFound();
+            }*/
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseDto.databaseError();
+        }
+        return DeleteResponseDto.success();
+    }
+
+    @Override
+    public ResponseEntity<? super ModifyResponseDto> modify(ModifyRequestDto dto){
+        Long uid = dto.getUid();
+        Long id = dto.getId();
+        
+        try {
+            CommunityEntity entity = communityRepository.findById(id)
+                    .orElseThrow(() -> new RuntimeException("게시물 없음"));
+
+            /*if(!entity.getUid().equals(uid)){
+                return 
+            }*/
+
+            entity.update(dto);
+            communityRepository.save(entity);
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseDto.databaseError();
+        }
+        return ModifyResponseDto.success();
     }
 }
     

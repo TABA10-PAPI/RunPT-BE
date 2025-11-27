@@ -59,8 +59,27 @@ public class CommunityController {
         return response;
     }
     
-    
+    @PostMapping("/delete")
+    public ResponseEntity<? super DeleteResponseDto> delete(
+            @RequestBody @Valid DeleteRequestDto requestBody
+    ) {
 
+        ResponseEntity<? super DeleteResponseDto> response =
+                communityService.delete(requestBody);
+
+        return response;
+    }
+
+    @PostMapping("/modify")
+    public ResponseEntity<? super ModifyResponseDto> modify(
+            @RequestBody @Valid ModifyRequestDto requestBody
+    ) {
+
+        ResponseEntity<? super ModifyResponseDto> response =
+                communityService.modify(requestBody);
+
+        return response;
+    }
 
     
 }

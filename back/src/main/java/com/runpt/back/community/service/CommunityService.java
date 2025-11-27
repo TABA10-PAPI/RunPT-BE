@@ -9,6 +9,7 @@ public interface CommunityService{
     ResponseEntity<? super HomeResponseDto> getList(HomeRequestDto dto);
     ResponseEntity<? super DetailResponseDto> getDetail(DetailRequestDto dto);
     ResponseEntity<? super CommentResponseDto> writeComment(CommentRequestDto dto);
-
+    ResponseEntity<? super DeleteResponseDto> delete(DeleteRequestDto dto);
+    ResponseEntity<? super ModifyResponseDto> modify(ModifyRequestDto dto);
 
 }

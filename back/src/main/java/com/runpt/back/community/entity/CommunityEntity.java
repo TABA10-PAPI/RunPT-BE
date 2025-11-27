@@ -4,7 +4,8 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
-import com.runpt.back.community.dto.request.PostRequestDto;
+import com.runpt.back.community.dto.request.*;
+
 
 import java.time.LocalDateTime;
 
@@ -48,5 +49,15 @@ public class CommunityEntity {
         this.createAt = time;
         this.nickname = nickname;
         this.tier = tier;
+    }
+
+    public void update(ModifyRequestDto dto){
+        this.title = dto.getTitle();
+        this.startpoint = dto.getStartpoint();
+        this.distance = dto.getDistance();
+        this.starttime = dto.getStarttime();
+        this.targetpace = dto.getTargetpace();
+        this.targetgender = dto.getTargetgender();
+        this.shortinfo = dto.getShortinfo();
     }
 }
