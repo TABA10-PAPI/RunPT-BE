@@ -155,8 +155,7 @@ public class CommunityServiceImplement implements CommunityService{
             //     return DeleteResponseDto.notFound();
             // }
 
-            // Long Cid = entity.getId();
-            // if(Cid != uid){
+            // if(entity.getId() != uid){
             //     return DeleteResponseDto.fail(); 
             // }
 
