@@ -1,43 +1,62 @@
-name: Deploy Spring Boot to EC2 (Ubuntu)
+name: Deploy Spring Boot (RunPT) to EC2
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
+    env:
+      EC2_KEY: ${{ secrets.EC2_KEY }}
+      EC2_HOST: ${{ secrets.EC2_HOST }}
+      EC2_USER: ${{ secrets.EC2_USER }}
+
     steps:
-      - name: Checkout repository
+      - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Set up JDK
-        uses: actions/setup-java@v3
-        with:
-          java-version: '21'
-          distribution: 'temurin'
-
-      - name: Build Spring Boot Project
-        working-directory: ./back
+      - name: Configure SSH
         run: |
-          chmod +x gradlew
-          ./gradlew clean build -x test
-
-      - name: Deploy to EC2
-        env:
-          HOST: ${{ secrets.EC2_HOST }}
-          USER: ${{ secrets.EC2_USER }}
-          PRIVATE_KEY: ${{ secrets.EC2_KEY }}
-        run: |
-          echo "$PRIVATE_KEY" > key.pem
+          echo "$EC2_KEY" > key.pem
           chmod 600 key.pem
 
-          ssh -o StrictHostKeyChecking=no -i key.pem $USER@$HOST "echo 'Connected to EC2'"
+      - name: Upload JAR to EC2
+        run: |
+          scp -o StrictHostKeyChecking=no -i key.pem \
+            ./back-0.0.1-SNAPSHOT.jar \
+            ${EC2_USER}@${EC2_HOST}:/home/ubuntu/app/
 
-          scp -o StrictHostKeyChecking=no -i key.pem back/build/libs/back-0.0.1-SNAPSHOT.jar $USER@$HOST:/home/ubuntu/app/
-          scp -o StrictHostKeyChecking=no -i key.pem back/script/restart.sh $USER@$HOST:/home/ubuntu/app/
+      - name: Create systemd service file on EC2
+        run: |
+          ssh -o StrictHostKeyChecking=no -i key.pem ${EC2_USER}@${EC2_HOST} "
+            echo '[Unit]' | sudo tee /etc/systemd/system/runpt.service > /dev/null
+            echo 'Description=RunPT Spring Boot Application' | sudo tee -a /etc/systemd/system/runpt.service
+            echo 'After=network.target' | sudo tee -a /etc/systemd/system/runpt.service
+            echo '' | sudo tee -a /etc/systemd/system/runpt.service
 
-          ssh -o StrictHostKeyChecking=no -i key.pem $USER@$HOST "chmod +x /home/ubuntu/app/restart.sh"
+            echo '[Service]' | sudo tee -a /etc/systemd/system/runpt.service
+            echo 'Environment=\"DB_END_POINT=${{ secrets.DB_END_POINT }}\"' | sudo tee -a /etc/systemd/system/runpt.service
+            echo 'Environment=\"DB_USER_NAME=${{ secrets.DB_USER_NAME }}\"' | sudo tee -a /etc/systemd/system/runpt.service
+            echo 'Environment=\"DB_PASSWORD=${{ secrets.DB_PASSWORD }}\"' | sudo tee -a /etc/systemd/system/runpt.service
+            echo 'Environment=\"DB_DRIVER_CLASS_NAME=com.mysql.cj.jdbc.Driver\"' | sudo tee -a /etc/systemd/system/runpt.service
+            echo 'Environment=\"JWT_SECRET=${{ secrets.JWT_SECRET }}\"' | sudo tee -a /etc/systemd/system/runpt.service
 
-          ssh -o StrictHostKeyChecking=no -i key.pem $USER@$HOST "/home/ubuntu/app/restart.sh"
+            echo 'WorkingDirectory=/home/ubuntu/app' | sudo tee -a /etc/systemd/system/runpt.service
+            echo 'ExecStart=/usr/bin/java -jar /home/ubuntu/app/back-0.0.1-SNAPSHOT.jar' | sudo tee -a /etc/systemd/system/runpt.service
+            echo 'Restart=always' | sudo tee -a /etc/systemd/system/runpt.service
+            echo 'User=ubuntu' | sudo tee -a /etc/systemd/system/runpt.service
+
+            echo '' | sudo tee -a /etc/systemd/system/runpt.service
+            echo '[Install]' | sudo tee -a /etc/systemd/system/runpt.service
+            echo 'WantedBy=multi-user.target' | sudo tee -a /etc/systemd/system/runpt.service
+          "
+
+      - name: Reload and Restart Service
+        run: |
+          ssh -o StrictHostKeyChecking=no -i key.pem ${EC2_USER}@${EC2_HOST} "
+            sudo systemctl daemon-reload;
+            sudo systemctl enable runpt;
+            sudo systemctl restart runpt;
+          "
