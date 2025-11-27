@@ -24,7 +24,7 @@ jobs:
           chmod +x gradlew
           ./gradlew clean build -x test
 
-      - name: Deploy to EC2
+      - name: Deploy to EC2 (nohup 방식)
         env:
           HOST: ${{ secrets.EC2_HOST }}
           USER: ${{ secrets.EC2_USER }}
@@ -33,11 +33,19 @@ jobs:
           echo "$PRIVATE_KEY" > key.pem
           chmod 600 key.pem
 
-          ssh -o StrictHostKeyChecking=no -i key.pem $USER@$HOST "echo 'Connected to EC2'"
+          echo "🔐 Connecting to EC2..."
+          ssh -o StrictHostKeyChecking=no -i key.pem $USER@$HOST "echo 'Connected to EC2 ✔'"
 
+          echo "📦 Uploading JAR..."
           scp -o StrictHostKeyChecking=no -i key.pem back/build/libs/back-0.0.1-SNAPSHOT.jar $USER@$HOST:/home/ubuntu/app/
+
+          echo "📦 Uploading restart script..."
           scp -o StrictHostKeyChecking=no -i key.pem back/script/restart.sh $USER@$HOST:/home/ubuntu/app/
 
+          echo "🔧 Applying permissions..."
           ssh -o StrictHostKeyChecking=no -i key.pem $USER@$HOST "chmod +x /home/ubuntu/app/restart.sh"
 
+          echo "🚀 Restarting application..."
           ssh -o StrictHostKeyChecking=no -i key.pem $USER@$HOST "/home/ubuntu/app/restart.sh"
+
+          echo "🎉 Deployment completed!"
