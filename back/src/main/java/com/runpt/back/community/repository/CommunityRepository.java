@@ -7,8 +7,7 @@ import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface CommunityRepository extends JpaRepository<CommunityEntity, Long>{
-    
     List<CommunityEntity> findByTargetgenderInOrderByCreateAtDesc(List<String> genders);
-    long deleteByUidAndId(Long uid, Long id);  
-    boolean existsByUidAndId(Long uid, Long id);
+    void deleteByUidAndId(Long uid, Long id);  
+    void existsByUidAndId(Long uid, Long id);
 }
