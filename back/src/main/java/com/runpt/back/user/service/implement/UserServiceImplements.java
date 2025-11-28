@@ -12,18 +12,18 @@ import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.runpt.back.global.dto.KakaoUserInfo;
-//import com.runpt.back.global.dto.NaverUserInfo;
+import com.runpt.back.global.dto.NaverUserInfo;
 import com.runpt.back.global.dto.ResponseDto;
 import com.runpt.back.global.helper.KakaoOauthHelper;
 import com.runpt.back.user.entity.BatteryEntity;
-//import com.runpt.back.global.helper.NaverOauthHelper;
+import com.runpt.back.global.helper.NaverOauthHelper;
 import com.runpt.back.user.entity.RunningSessionEntity;
 import com.runpt.back.user.entity.TierEntity;
 import com.runpt.back.user.dto.request.BatteryToAiRequestDto;
 import com.runpt.back.user.dto.request.GetMyPageRequestDto;
 import com.runpt.back.user.dto.request.JoinRequestDto;
 import com.runpt.back.user.dto.request.KakaoLoginRequestDto;
-//import com.runpt.back.user.dto.request.NaverLoginRequestDto;
+import com.runpt.back.user.dto.request.NaverLoginRequestDto;
 import com.runpt.back.user.dto.request.SaveRunningRequestDto;
 import com.runpt.back.user.dto.request.RunningToAIRequestDto;
 
@@ -31,7 +31,7 @@ import com.runpt.back.user.dto.response.GetMyPageResponseDto;
 import com.runpt.back.user.dto.response.JoinResponseDto;
 import com.runpt.back.user.dto.response.KakaoLoginResponseDto;
 import com.runpt.back.user.dto.response.SaveRunningResponseDto;
-//import com.runpt.back.user.dto.response.NaverLoginResponseDto;
+import com.runpt.back.user.dto.response.NaverLoginResponseDto;
 
 import com.runpt.back.user.entity.UserEntity;
 import com.runpt.back.user.repository.TierRepository;
@@ -52,7 +52,7 @@ public class UserServiceImplements implements UserService {
     private final RunningSessionRepository runningSessionRepository;
     private final BatteryRepository batteryRepository;
     private final KakaoOauthHelper kakaoOauthHelper;
-    //private final NaverOauthHelper naverOauthHelper;
+    private final NaverOauthHelper naverOauthHelper;
 
     @Override
     public ResponseEntity<? super KakaoLoginResponseDto> kakaoLogin(KakaoLoginRequestDto dto) {
@@ -96,44 +96,44 @@ public class UserServiceImplements implements UserService {
         return KakaoLoginResponseDto.kakaoLoginSuccess(uid, fresh, nickname);
     }
 
-    // pubilc ResponseEntity<? super NaverLoginResponseDto> naverLogin(NaverLoginRequestDto dto) {
-    //     long uid = 0;
-    //     boolean fresh = false;
-    //     String nickname = null;
+    public ResponseEntity<? super NaverLoginResponseDto> naverLogin(NaverLoginRequestDto dto) {
+        long uid = 0;
+        boolean fresh = false;
+        String nickname = null;
 
-    //     try {
-    //         if (dto.getAccessToken() == null || dto.getAccessToken().isEmpty()) {
-    //             return ResponseDto.badRequest();
-    //         }
+        try {
+            if (dto.getAccessToken() == null || dto.getAccessToken().isEmpty()) {
+                return ResponseDto.badRequest();
+            }
 
-    //         NaverUserInfo info = naverOauthHelper.getUserInfoFromToken(dto.getAccessToken());
-    //         if (info == null) {
-    //             return NaverLoginResponseDto.databaseError();
-    //         }
+            NaverUserInfo info = naverOauthHelper.getUserInfoFromToken(dto.getAccessToken());
+            if (info == null) {
+                return NaverLoginResponseDto.databaseError();
+            }
 
-    //         String naverId = info.getId();
-    //         nickname = info.getNickname();
+            String naverId = info.getId();
+            nickname = info.getNickname();
 
-    //         UserEntity user = userRepository.findByOauthProviderAndOauthUid("naver", naverId);
+            UserEntity user = userRepository.findByOauthProviderAndOauthUid("naver", naverId);
 
-    //         if (user == null) {
-    //             fresh = true;
-    //             user = new UserEntity();
-    //             user.setOauthProvider("naver");
-    //             user.setOauthUid(naverId);
-    //             user.setNickname(nickname != null ? nickname : "닉네임 없음");
-    //             userRepository.save(user);
-    //         }
+            if (user == null) {
+                fresh = true;
+                user = new UserEntity();
+                user.setOauthProvider("naver");
+                user.setOauthUid(naverId);
+                user.setNickname(nickname != null ? nickname : "닉네임 없음");
+                userRepository.save(user);
+            }
 
-    //         uid = user.getId();
+            uid = user.getId();
 
-    //     } catch (Exception e) {
-    //         e.printStackTrace();
-    //         return ResponseDto.databaseError();
-    //     }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseDto.databaseError();
+        }
 
-    //     return NaverLoginResponseDto.naverLoginSuccess(uid, fresh, nickname);
-    // }
+        return NaverLoginResponseDto.naverLoginSuccess(uid, fresh, nickname);
+    }
 
 
     @Override

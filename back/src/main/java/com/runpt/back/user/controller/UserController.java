@@ -26,12 +26,12 @@ public class UserController {
         return userService.kakaoLogin(requestBody);
     }
 
-    // @PostMapping("/naver-login")
-    // public ResponseEntity<? super NaverLoginResponseDto> naverAuth(
-    //          @RequestBody NaverLoginRequestDto requestBody
-    // ) {
-    //     return userService.naverLogin(requestBody);
-    // }
+    @PostMapping("/naver-login")
+    public ResponseEntity<? super NaverLoginResponseDto> naverAuth(
+             @RequestBody NaverLoginRequestDto requestBody
+    ) {
+        return userService.naverLogin(requestBody);
+    }
     
 
     @PostMapping("/join")

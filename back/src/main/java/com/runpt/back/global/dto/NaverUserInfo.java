@@ -5,7 +5,6 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-
 public class NaverUserInfo {
     private String id;
     private String nickname;    
