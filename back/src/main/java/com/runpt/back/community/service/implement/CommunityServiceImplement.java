@@ -292,5 +292,24 @@ public class CommunityServiceImplement implements CommunityService{
         }
         return CheckParticipateResponseDto.success(participates);
     }
+
+    @Transactional
+    @Override
+    public ResponseEntity<? super CommentDeleteResponseDto> commentdelete(CommentDeleteRequestDto dto){
+        Long uid = dto.getUid();
+        Long communityid = dto.getCommunityid();
+        CommentEntity comment = null;
+        try {
+            comment = commentRepository.findByUidAndCommunityid(uid, communityid);
+            
+            commentRepository.deleteAllByUidAndCommunityid(uid, communityid);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseDto.databaseError();
+        }
+        return CommentDeleteResponseDto.success();
+    }
+
 }
     

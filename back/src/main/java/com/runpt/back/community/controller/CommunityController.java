@@ -113,4 +113,15 @@ public class CommunityController {
 
         return response;
     }
+
+    @PostMapping("/comment/delete")
+    public ResponseEntity<? super CommentDeleteResponseDto> commentdelete(
+            @RequestBody @Valid CommentDeleteRequestDto requestBody
+    ) {
+
+        ResponseEntity<? super CommentDeleteResponseDto> response =
+                communityService.commentdelete(requestBody);
+
+        return response;
+    }
 }
