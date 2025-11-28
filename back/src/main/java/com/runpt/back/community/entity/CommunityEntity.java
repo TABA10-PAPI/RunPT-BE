@@ -30,6 +30,8 @@ public class CommunityEntity {
     private String targetgender;
     private String shortinfo;
 
+    private int participateuser;
+
     private String nickname;
     private String tier;
 
@@ -46,6 +48,7 @@ public class CommunityEntity {
         this.targetpace = dto.getTargetpace();
         this.targetgender = dto.getTargetgender();
         this.shortinfo = dto.getShortinfo();
+        this.participateuser = 0;
         this.createAt = time;
         this.nickname = nickname;
         this.tier = tier;
@@ -59,5 +62,13 @@ public class CommunityEntity {
         this.targetpace = dto.getTargetpace();
         this.targetgender = dto.getTargetgender();
         this.shortinfo = dto.getShortinfo();
+    }
+
+    public void increaseParticipant(){
+        this.participateuser += 1;
+    }
+
+    public void decreaseParticipant(){
+        this.participateuser -= 1;
     }
 }

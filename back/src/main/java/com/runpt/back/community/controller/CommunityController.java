@@ -92,4 +92,25 @@ public class CommunityController {
         return response;
     }
     
+    @PostMapping("/participate/cancel")
+    public ResponseEntity<? super ParticipateCancelResponseDto> participatecancel(
+            @RequestBody @Valid ParticipateCancelRequestDto requestBody
+    ) {
+
+        ResponseEntity<? super ParticipateCancelResponseDto> response =
+                communityService.participatecancel(requestBody);
+
+        return response;
+    }
+
+    @PostMapping("/checkparticipate")
+    public ResponseEntity<? super CheckParticipateResponseDto> checkparticipate(
+            @RequestBody @Valid CheckParticipateRequestDto requestBody
+    ) {
+
+        ResponseEntity<? super CheckParticipateResponseDto> response =
+                communityService.checkparticipate(requestBody);
+
+        return response;
+    }
 }

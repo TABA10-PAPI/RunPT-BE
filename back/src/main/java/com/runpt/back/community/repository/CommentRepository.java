@@ -8,5 +8,5 @@ import com.runpt.back.community.entity.CommentEntity;
 
 public interface CommentRepository  extends JpaRepository<CommentEntity, Long>{
     List<CommentEntity> findByCommunityidOrderByCreateAtAsc(Long communityid);
-    long deleteAllByCommunityid(Long communityid);
+    void deleteAllByCommunityid(Long communityid);
 }
