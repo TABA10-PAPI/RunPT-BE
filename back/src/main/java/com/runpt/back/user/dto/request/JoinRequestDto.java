@@ -18,4 +18,6 @@ public class JoinRequestDto {
     private int height;
     @NotNull
     private int weight;
+    @NotNull
+    private String gender;
 }
