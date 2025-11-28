@@ -127,6 +127,8 @@ public class UserServiceImplements implements UserService {
 
             uid = user.getId();
 
+            getBatteryInfo(uid, dto.getDate());
+
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseDto.databaseError();
