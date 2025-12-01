@@ -62,12 +62,12 @@ public class UserServiceImplements implements UserService {
 
         try {
             if (dto.getAccessToken() == null || dto.getAccessToken().isEmpty()) {
-                return ResponseDto.badRequest();
+                return KakaoLoginResponseDto.invalidAccessToken();
             }
 
             KakaoUserInfo info = kakaoOauthHelper.getUserInfoFromToken(dto.getAccessToken());
             if (info == null) {
-                return KakaoLoginResponseDto.databaseError();
+                return KakaoLoginResponseDto.oauthApiError();
             }
 
             String kakaoId = info.getId();
@@ -103,12 +103,12 @@ public class UserServiceImplements implements UserService {
 
         try {
             if (dto.getAccessToken() == null || dto.getAccessToken().isEmpty()) {
-                return ResponseDto.badRequest();
+                return NaverLoginResponseDto.invalidAccessToken();
             }
 
             NaverUserInfo info = naverOauthHelper.getUserInfoFromToken(dto.getAccessToken());
             if (info == null) {
-                return NaverLoginResponseDto.databaseError();
+                return NaverLoginResponseDto.oauthApiError();
             }
 
             String naverId = info.getId();
@@ -143,8 +143,24 @@ public class UserServiceImplements implements UserService {
 
         try {
             UserEntity user = userRepository.findById(dto.getUid());
-            if (user == null) return ResponseDto.badRequest();
+            if (user == null) return JoinResponseDto.userNotExitsts();
 
+            if (dto.getAge() <= 0 || dto.getAge() > 150) {
+                return ResponseDto.validationFail();
+            }
+
+            if (dto.getHeight() <= 0 || dto.getHeight() > 250) {
+                return ResponseDto.validationFail();
+            }
+
+            if (dto.getWeight() <= 0 || dto.getWeight() > 200) {
+                return ResponseDto.validationFail();
+            }
+
+            if (!"M".equalsIgnoreCase(dto.getGender()) && !"F".equalsIgnoreCase(dto.getGender())) {
+                return ResponseDto.validationFail();
+            }
+            
             user.setNickname(dto.getNickname());
             user.setAge(dto.getAge());
             user.setGender(dto.getGender());
@@ -168,7 +184,7 @@ public class UserServiceImplements implements UserService {
     public ResponseEntity<? super GetMyPageResponseDto> getMyPage(GetMyPageRequestDto dto) {
         try {
             UserEntity user = userRepository.findById(dto.getUid());
-            if (user == null) return ResponseDto.badRequest();
+            if (user == null) return GetMyPageResponseDto.userNotExists();
 
             TierEntity tier = tierRepository.findByUid(dto.getUid());
             List<RunningSessionEntity> list =
@@ -191,6 +207,14 @@ public class UserServiceImplements implements UserService {
     public ResponseEntity<? super SaveRunningResponseDto> saveRunning(SaveRunningRequestDto dto) {
 
         try {
+
+            if (dto.getDate() == null) {
+                return SaveRunningResponseDto.invalidDateFormat();  
+            }
+
+            if (dto.getPace() <= 0 || dto.getDistance() <= 0 || dto.getDurationSec() <= 0 || dto.getHeartRateAvg() < 0) {
+                return SaveRunningResponseDto.invalidRunningData(); 
+            }
             // 1) 러닝 기록 저장
             RunningSessionEntity session = new RunningSessionEntity();
             session.setUid(dto.getUid());
@@ -210,9 +234,14 @@ public class UserServiceImplements implements UserService {
             boolean isShort = dto.getDistance() <= 10000;
 
             // 3) 이번 러닝의 티어 계산 = 초 단위 페이스
-            TierCalculator.Tier newTier = isShort
-                    ? TierCalculator.calculateShortDistanceTier(dto.getPace())
-                    : TierCalculator.calculateLongDistanceTier(dto.getPace());
+            TierCalculator.Tier newTier;
+            try {
+                newTier = isShort
+                        ? TierCalculator.calculateShortDistanceTier(dto.getPace())
+                        : TierCalculator.calculateLongDistanceTier(dto.getPace());
+            } catch (Exception e) {
+                return SaveRunningResponseDto.tierCalculationError();  
+            }
 
             // 4) best time = pace 로 저장
             int newBestTime = dto.getPace();
