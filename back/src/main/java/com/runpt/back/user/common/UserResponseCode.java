@@ -11,11 +11,10 @@ public interface UserResponseCode extends ResponseCode {
     String UNKNOWN_USER = "UU";
     
     String INVALID_ACCESS_TOKEN = "IAT";
-    String OAUTH_API_ERROR = "OAE";            
-    String INVALID_CODE = "IC";                
-    String CODE_TO_TOKEN_FAIL = "CTF";        
+    String OAUTH_API_ERROR = "OAE";                           
     String INVALID_DATE_FORMAT = "IDF";       
     String INVALID_RUNNING_DATA = "IRD";      
     String TIER_CALCULATION_ERROR = "TCE";  
-    String AI_SERVER_ERROR = "ASE";            
+    String TIER_SAvE_FAILED = "TSF";
+    String RUNNING_SAVE_FAILED = "RSF";        
 }

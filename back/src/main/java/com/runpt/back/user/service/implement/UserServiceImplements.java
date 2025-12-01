@@ -61,14 +61,14 @@ public class UserServiceImplements implements UserService {
         String nickname = null;
 
         try {
-            if (dto.getAccessToken() == null || dto.getAccessToken().isEmpty()) {
+            if (dto.getAccessToken() == null || dto.getAccessToken().trim().isEmpty()) {
                 return KakaoLoginResponseDto.invalidAccessToken();
             }
 
             KakaoUserInfo info = kakaoOauthHelper.getUserInfoFromToken(dto.getAccessToken());
-            if (info == null) {
-                return KakaoLoginResponseDto.oauthApiError();
-            }
+
+            if (info == null) return KakaoLoginResponseDto.oauthApiError();
+
 
             String kakaoId = info.getId();
             nickname = info.getNickname();
@@ -87,7 +87,7 @@ public class UserServiceImplements implements UserService {
             uid = user.getId();
 
             getBatteryInfo(uid, dto.getDate());
-
+            
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseDto.databaseError();
@@ -102,7 +102,7 @@ public class UserServiceImplements implements UserService {
         String nickname = null;
 
         try {
-            if (dto.getAccessToken() == null || dto.getAccessToken().isEmpty()) {
+            if (dto.getAccessToken() == null || dto.getAccessToken().trim().isEmpty()) {
                 return NaverLoginResponseDto.invalidAccessToken();
             }
 
@@ -145,21 +145,14 @@ public class UserServiceImplements implements UserService {
             UserEntity user = userRepository.findById(dto.getUid());
             if (user == null) return JoinResponseDto.userNotExitsts();
 
-            if (dto.getAge() <= 0 || dto.getAge() > 150) {
-                return ResponseDto.validationFail();
-            }
-
-            if (dto.getHeight() <= 0 || dto.getHeight() > 250) {
-                return ResponseDto.validationFail();
-            }
-
-            if (dto.getWeight() <= 0 || dto.getWeight() > 200) {
-                return ResponseDto.validationFail();
-            }
-
-            if (!"M".equalsIgnoreCase(dto.getGender()) && !"F".equalsIgnoreCase(dto.getGender())) {
-                return ResponseDto.validationFail();
-            }
+            if (dto.getUid() <= 0) return JoinResponseDto.validationFail();
+            if (dto.getAge() <= 0 || dto.getAge() > 150) return JoinResponseDto.validationFail();
+            if (dto.getHeight() <= 0 || dto.getHeight() > 250) return JoinResponseDto.validationFail();
+            if (dto.getWeight() <= 0 || dto.getWeight() > 230) return JoinResponseDto.validationFail();
+            if (!"M".equalsIgnoreCase(dto.getGender()) && !"F".equalsIgnoreCase(dto.getGender()))
+                return JoinResponseDto.validationFail();
+            if (dto.getNickname() == null || dto.getNickname().trim().isEmpty())
+                return JoinResponseDto.validationFail();
             
             user.setNickname(dto.getNickname());
             user.setAge(dto.getAge());
@@ -207,23 +200,33 @@ public class UserServiceImplements implements UserService {
     public ResponseEntity<? super SaveRunningResponseDto> saveRunning(SaveRunningRequestDto dto) {
 
         try {
-
-            if (dto.getDate() == null) {
-                return SaveRunningResponseDto.invalidDateFormat();  
+            if (dto.getUid() <= 0) return SaveRunningResponseDto.invalidRunningData();
+            if (dto.getDate() == null) return SaveRunningResponseDto.invalidDateFormat();
+            if (dto.getPace() <= 0 ||
+                dto.getDistance() <= 0 ||
+                dto.getDurationSec() <= 0 ||
+                dto.getHeartRateAvg() < 0) {
+                return SaveRunningResponseDto.invalidRunningData();
             }
 
-            if (dto.getPace() <= 0 || dto.getDistance() <= 0 || dto.getDurationSec() <= 0 || dto.getHeartRateAvg() < 0) {
-                return SaveRunningResponseDto.invalidRunningData(); 
-            }
+            UserEntity user = userRepository.findById(dto.getUid());
+            if (user == null) return SaveRunningResponseDto.userNotExists();
+
             // 1) 러닝 기록 저장
-            RunningSessionEntity session = new RunningSessionEntity();
-            session.setUid(dto.getUid());
-            session.setDistance(dto.getDistance());
-            session.setDate(dto.getDate());
-            session.setDurationSec(dto.getDurationSec());
-            session.setHeartRateAvg(dto.getHeartRateAvg());
-            session.setPace(dto.getPace());
-            runningSessionRepository.save(session);
+            try {
+                RunningSessionEntity session = new RunningSessionEntity();
+                session.setUid(dto.getUid());
+                session.setDistance(dto.getDistance());
+                session.setDate(dto.getDate());
+                session.setDurationSec(dto.getDurationSec());
+                session.setHeartRateAvg(dto.getHeartRateAvg());
+                session.setPace(dto.getPace());
+                runningSessionRepository.save(session);
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                return SaveRunningResponseDto.runningSaveFailed();
+            }
 
             // 2) 티어 엔티티 조회
             TierEntity tier = tierRepository.findByUid(dto.getUid());
@@ -245,25 +248,26 @@ public class UserServiceImplements implements UserService {
 
             // 4) best time = pace 로 저장
             int newBestTime = dto.getPace();
-
-            if (isShort) {
-
+            
+            try{
+                if (isShort) {
                 TierCalculator.Tier oldTier = tier.getShortTierRank() != null
-                        ? TierCalculator.Tier.valueOf(tier.getShortTierRank()) : null;
+                        ? TierCalculator.Tier.valueOf(tier.getShortTierRank())
+                        : null;
 
-                if (oldTier == null ||
+                    if (oldTier == null ||
                         TierCalculator.getTierPriority(newTier) > TierCalculator.getTierPriority(oldTier)) {
                     tier.setShortTierRank(newTier.name());
-                }
+                    }
 
-                if (tier.getShortBestTime() == 0 || newBestTime < tier.getShortBestTime()) {
+                    if (tier.getShortBestTime() == 0 || newBestTime < tier.getShortBestTime()) {
                     tier.setShortBestTime(newBestTime);
-                }
+                    }
 
-            } else {
-
-                TierCalculator.Tier oldTier = tier.getLongTierRank() != null
-                        ? TierCalculator.Tier.valueOf(tier.getLongTierRank()) : null;
+                } else {
+                    TierCalculator.Tier oldTier = tier.getLongTierRank() != null
+                            ? TierCalculator.Tier.valueOf(tier.getLongTierRank())
+                            : null;
 
                 if (oldTier == null ||
                         TierCalculator.getTierPriority(newTier) > TierCalculator.getTierPriority(oldTier)) {
@@ -277,6 +281,11 @@ public class UserServiceImplements implements UserService {
 
             tierRepository.save(tier);
 
+            } catch (Exception e) {
+                e.printStackTrace();
+                return SaveRunningResponseDto.tierSaveFailed();
+            }
+
             // 5) AI 서버로 러닝 데이터 전송
             sendRunningToAi(dto);
 
@@ -287,7 +296,6 @@ public class UserServiceImplements implements UserService {
 
         return SaveRunningResponseDto.saveRunningSuccess();
     }
-
 
     private void sendRunningToAi(SaveRunningRequestDto dto) {
         try {
@@ -317,6 +325,7 @@ public class UserServiceImplements implements UserService {
             e.printStackTrace();
         }
     }
+    
     // AI 서버에서 배터리 정보 받아와서 DB에 저장 + 엔티티 반환
     private void getBatteryInfo(Long uid, String date) {
         System.out.println("===== [AI BATTERY REQUEST START] =====");
@@ -383,3 +392,4 @@ public class UserServiceImplements implements UserService {
         }
     }
 }
+    

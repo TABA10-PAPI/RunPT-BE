@@ -12,10 +12,9 @@ public interface UserResponseMessage extends ResponseMessage{
 
     String INVALID_ACCESS_TOKEN = "invalid access token";
     String OAUTH_API_ERROR = "OAuth API error";
-    String INVALID_CODE = "invalid code";
-    String CODE_TO_TOKEN_FAIL = "failed to convert code to access token";
     String INVALID_DATE_FORMAT = "invalid date format";
     String INVALID_RUNNING_DATA = "invalid running data";
     String TIER_CALCULATION_ERROR = "tier calculation error";
-    String AI_SERVER_ERROR = "AI server communication error";
+    String TIER_SAvE_FAILED = "tier save failed";
+    String RUNNING_SAVE_FAILED = "running data save failed";
 }

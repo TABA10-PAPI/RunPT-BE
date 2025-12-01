@@ -32,4 +32,19 @@ public class SaveRunningResponseDto extends ResponseDto{
         ResponseDto responseBody = new ResponseDto(UserResponseCode.TIER_CALCULATION_ERROR, UserResponseMessage.TIER_CALCULATION_ERROR);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(responseBody);
     }
+
+    public static ResponseEntity<ResponseDto> runningSaveFailed() {
+        ResponseDto responseBody = new ResponseDto(UserResponseCode.RUNNING_SAVE_FAILED, UserResponseMessage.RUNNING_SAVE_FAILED);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(responseBody);
+    }
+
+    public static ResponseEntity<ResponseDto> tierSaveFailed() {
+        ResponseDto responseBody = new ResponseDto(UserResponseCode.TIER_SAvE_FAILED, UserResponseMessage.TIER_SAvE_FAILED);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(responseBody);
+    }
+
+    public static ResponseEntity<ResponseDto> userNotExists() {
+        ResponseDto responseBody = new ResponseDto(UserResponseCode.USER_NOT_EXISTS, UserResponseMessage.USER_NOT_EXISTS);
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(responseBody);
+    }
 }
