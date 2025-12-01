@@ -12,10 +12,12 @@ import com.runpt.back.user.entity.RunningSessionEntity;
 import com.runpt.back.user.entity.TierEntity;
 import com.runpt.back.user.entity.UserEntity;
 
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Setter
+@Getter
 @NoArgsConstructor
 public class GetMyPageResponseDto extends ResponseDto{
     UserEntity user;
