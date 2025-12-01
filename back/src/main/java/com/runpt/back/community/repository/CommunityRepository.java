@@ -10,5 +10,6 @@ public interface CommunityRepository extends JpaRepository<CommunityEntity, Long
     List<CommunityEntity> findByTargetgenderInOrderByCreateAtDesc(List<String> genders);
     void deleteByUidAndId(Long uid, Long id);  
     void existsByUidAndId(Long uid, Long id);
+    List<CommunityEntity> findByTargetgenderOrTargetgenderOrderByCreateAtDesc(String gender1, String gender2);
     
 }

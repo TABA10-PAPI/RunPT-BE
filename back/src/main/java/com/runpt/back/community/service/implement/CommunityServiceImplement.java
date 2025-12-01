@@ -72,19 +72,16 @@ public class CommunityServiceImplement implements CommunityService{
             // 2. 성별 가져오기
             String userGender = user.getGender();   // "MALE", "FEMALE"
 
-            // 3. 필터링 조건 만들기
-            List<String> genderFilter;
-
-            if ("MALE".equalsIgnoreCase(userGender)) {
-                genderFilter = List.of("MALE", "ALL");
-            } else if ("FEMALE".equalsIgnoreCase(userGender)) {
-                genderFilter = List.of("FEMALE", "ALL");
+            if (userGender.equals("M")) {
+                entityList = communityRepository
+                    .findByTargetgenderOrTargetgenderOrderByCreateAtDesc("M", "ALL");
+            } else if (userGender.equals("F")) {
+                entityList = communityRepository
+                    .findByTargetgenderOrTargetgenderOrderByCreateAtDesc("F", "ALL");
             } else {
-                genderFilter = List.of("ALL");
+                return ResponseDto.databaseError();
             }
 
-            // 4. 게시글 조회, 최근 만들어진 게시물 부터 나오게
-            entityList = communityRepository.findByTargetgenderInOrderByCreateAtDesc(genderFilter);
         } catch (Exception e) {
             
         }
