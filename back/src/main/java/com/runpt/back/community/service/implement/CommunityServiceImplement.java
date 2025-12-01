@@ -102,7 +102,6 @@ public class CommunityServiceImplement implements CommunityService{
                 .orElseThrow(() -> new RuntimeException("게시글이 존재하지 않습니다."));
 
             
-                
             List<CommentEntity> commentList = 
                 commentRepository.findByCommunityidOrderByCreateAtAsc(id);
 
@@ -164,21 +163,26 @@ public class CommunityServiceImplement implements CommunityService{
 
             // commentRepository.deleteById(id);
 
-            boolean exists = communityRepository.existsByUidAndId(uid, id);
+            //boolean exists = communityRepository.existsByUidAndId(uid, id);
 
             /*예외처리 할 코드if (!exists){
                 return DeleteResponseDto.notFound();
             }*/
+           
+            participaterepository.deleteAllByCommunityid(id);
 
-            long deleteCount = communityRepository.deleteByUidAndId(uid, id);
 
-            /*예외처리 할 코드 if(deleteCount == 0){
-                return DeleteResponseDto.notFound();
-            }*/
-            long communityComments = commentRepository.deleteAllByCommunityid(id);
+            commentRepository.deleteAllByCommunityid(id);
             /*예외처리 할 코드 if (communityComments == 0){
                 return DeleteResponseDto.noFound();
             }*/
+            communityRepository.deleteByUidAndId(uid, id);
+            /*예외처리 할 코드 if(deleteCount == 0){
+                return DeleteResponseDto.notFound();
+            }*/
+            
+
+            participaterepository.deleteAllByCommunityid(id);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -210,6 +214,7 @@ public class CommunityServiceImplement implements CommunityService{
         return ModifyResponseDto.success();
     }
 
+    @Override
     public ResponseEntity<? super ParticipateResponseDto> participate(ParticipateRequestDto dto){
         
         Long uid = dto.getUid();
@@ -219,6 +224,11 @@ public class CommunityServiceImplement implements CommunityService{
             if(origin != null){
 
             }*/
+
+            CommunityEntity community = communityRepository.findById(communityid)
+                            .orElseThrow(() -> new RuntimeException("게시물 없음"));
+            community.increaseParticipant();
+            communityRepository.save(community);
 
             String nickname = userRepository.findById(uid)
                 .map(user -> user.getNickname())
@@ -235,5 +245,71 @@ public class CommunityServiceImplement implements CommunityService{
         }
         return ParticipateResponseDto.success();
     }
+
+    @Transactional
+    @Override
+    public ResponseEntity<? super ParticipateCancelResponseDto> participatecancel(ParticipateCancelRequestDto dto){
+        
+        Long uid = dto.getUid();
+        Long communityid = dto.getCommunityid();
+        try {
+            /*ParticipateEntity origin = participaterepository.findByUidAndCommunityid(uid, communityid);
+            if(origin != null){
+
+            }*/
+
+            CommunityEntity community = communityRepository.findById(communityid)
+                            .orElseThrow(() -> new RuntimeException("게시물 없음"));
+            community.decreaseParticipant();
+            communityRepository.save(community);
+
+            ParticipateEntity entity = participaterepository.findByUidAndCommunityid(uid, communityid);
+            participaterepository.delete(entity);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseDto.databaseError();
+        }
+        return ParticipateCancelResponseDto.success();
+    }
+
+    @Override
+    public ResponseEntity<? super CheckParticipateResponseDto> checkparticipate(CheckParticipateRequestDto dto){
+        Long uid = dto.getUid();
+        Long communityid = dto.getCommunityid();
+        List<ParticipateEntity> participates = null; 
+        try {
+            /*CommunityEntity community = communityRepository.findById(communityid)
+                            .orElseThrow(() -> new RuntimeException("게시물 없음"));
+            if(communityid == community.getId()){
+
+            } */
+
+            participates = participaterepository.findByCommunityid(communityid);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseDto.databaseError();
+        }
+        return CheckParticipateResponseDto.success(participates);
+    }
+
+    @Transactional
+    @Override
+    public ResponseEntity<? super CommentDeleteResponseDto> commentdelete(CommentDeleteRequestDto dto){
+        Long uid = dto.getUid();
+        Long communityid = dto.getCommunityid();
+        CommentEntity comment = null;
+        try {
+            comment = commentRepository.findByUidAndCommunityid(uid, communityid);
+            
+            commentRepository.deleteAllByUidAndCommunityid(uid, communityid);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseDto.databaseError();
+        }
+        return CommentDeleteResponseDto.success();
+    }
+
 }
     

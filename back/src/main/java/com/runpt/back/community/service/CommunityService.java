@@ -12,5 +12,9 @@ public interface CommunityService{
     ResponseEntity<? super DeleteResponseDto> delete(DeleteRequestDto dto);
     ResponseEntity<? super ModifyResponseDto> modify(ModifyRequestDto dto);
     ResponseEntity<? super ParticipateResponseDto> participate(ParticipateRequestDto dto);
+    ResponseEntity<? super ParticipateCancelResponseDto> participatecancel(ParticipateCancelRequestDto dto);
+    ResponseEntity<? super CheckParticipateResponseDto> checkparticipate(CheckParticipateRequestDto dto);
+    ResponseEntity<? super CommentDeleteResponseDto> commentdelete(CommentDeleteRequestDto dto);
+
 
 }
