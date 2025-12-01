@@ -6,6 +6,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import com.runpt.back.global.dto.ResponseDto;
+import com.runpt.back.user.common.UserResponseCode;
+import com.runpt.back.user.common.UserResponseMessage;
 import com.runpt.back.user.entity.RunningSessionEntity;
 import com.runpt.back.user.entity.TierEntity;
 import com.runpt.back.user.entity.UserEntity;
@@ -28,5 +30,10 @@ public class GetMyPageResponseDto extends ResponseDto{
 
     public static ResponseEntity<GetMyPageResponseDto> getMyPageSuccess(UserEntity user, TierEntity tier, List<RunningSessionEntity> records) {
         return ResponseEntity.status(HttpStatus.OK).body(new GetMyPageResponseDto(user, tier, records));
+    }
+
+    public static ResponseEntity<ResponseDto> userNotExists() {
+        ResponseDto responseBody = new ResponseDto(UserResponseCode.USER_NOT_EXISTS, UserResponseMessage.USER_NOT_EXISTS);
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(responseBody);
     }
 }

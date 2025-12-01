@@ -36,7 +36,7 @@ public class CommunityController {
 
         ResponseEntity<? super CommunityHomeResponseDto> response = communityService.getList(requestBody);
 
-    return ResponseEntity.ok(response);
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/detail")
