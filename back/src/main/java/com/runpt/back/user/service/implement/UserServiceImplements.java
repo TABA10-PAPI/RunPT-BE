@@ -175,24 +175,27 @@ public class UserServiceImplements implements UserService {
 
     @Override
     public ResponseEntity<? super GetMyPageResponseDto> getMyPage(GetMyPageRequestDto dto) {
+        UserEntity user;
+        TierEntity tier;
+        List<RunningSessionEntity> recent;
         try {
-            UserEntity user = userRepository.findById(dto.getUid());
+            user = userRepository.findById(dto.getUid());
             if (user == null) return GetMyPageResponseDto.userNotExists();
 
-            TierEntity tier = tierRepository.findByUid(dto.getUid());
+            tier = tierRepository.findByUid(dto.getUid());
             List<RunningSessionEntity> list =
                     runningSessionRepository.findByUidOrderByDateDesc(dto.getUid());
 
-            List<RunningSessionEntity> recent = list.stream()
+            recent = list.stream()
                     .limit(5)
                     .collect(Collectors.toList());
-
-            return GetMyPageResponseDto.getMyPageSuccess(user, tier, recent);
 
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseDto.databaseError();
         }
+        return GetMyPageResponseDto.getMyPageSuccess(user, tier, recent);
+
     }
 
 
