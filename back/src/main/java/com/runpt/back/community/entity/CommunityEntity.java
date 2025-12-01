@@ -35,6 +35,7 @@ public class CommunityEntity {
     private String nickname;
     private String tier;
 
+    private Long commentCount;
 
     @CreationTimestamp
     private LocalDateTime createAt;

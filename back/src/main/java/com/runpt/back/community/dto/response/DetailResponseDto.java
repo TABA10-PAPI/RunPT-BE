@@ -29,6 +29,7 @@ public class DetailResponseDto extends ResponseDto{
     private String targetgender;
     private String shortinfo;
     private LocalDateTime createAt;
+    private int participateuser;
 
     private List<CommunityCommentResponseDto> comments;
 
@@ -45,6 +46,7 @@ public class DetailResponseDto extends ResponseDto{
         this.targetgender = community.getTargetgender();
         this.shortinfo = community.getShortinfo();
         this.createAt = community.getCreateAt();
+        this.participateuser = community.getParticipateuser();
 
         this.comments = comments;
     }

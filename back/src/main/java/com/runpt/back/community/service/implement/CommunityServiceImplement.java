@@ -70,7 +70,7 @@ public class CommunityServiceImplement implements CommunityService{
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
             // 2. 성별 가져오기
-            String userGender = user.getGender();   // "MALE", "FEMALE"
+            String userGender = user.getGender();   // "M", "F"
 
             if (userGender.equals("M")) {
                 entityList = communityRepository
@@ -82,8 +82,15 @@ public class CommunityServiceImplement implements CommunityService{
                 return ResponseDto.databaseError();
             }
 
+            // 3. 각 게시글에 댓글 수 채워넣기
+            for (CommunityEntity entity : entityList) {
+                long commentCount = commentRepository.countByCommunityid(entity.getId());
+                entity.setCommentCount(commentCount);
+            }
+
         } catch (Exception e) {
-            
+            e.printStackTrace();
+            // 필요하면 CommunityHomeResponseDto용 에러로 변경 가능
         }
         return CommunityHomeResponseDto.success(entityList);
     }
