@@ -36,8 +36,7 @@ public class RunningServiceImplement implements RunningService {
             if (uid == null) return RunningResponseDto.uidNotExists();
             if (date == null || date.isBlank()) return RunningResponseDto.dateNotExists();
 
-            BatteryEntity battery = batteryRepository.findByUidAndDate(uid, date)
-                    .orElse(null);
+            BatteryEntity battery = batteryRepository.findByUid(dto.getUid());
 
             if (battery == null) return RunningResponseDto.batteryNotFound();
 
@@ -75,8 +74,7 @@ public class RunningServiceImplement implements RunningService {
         List<RunningRecommendationDto> recommendations = null;
 
         try {
-            BatteryEntity entity = batteryRepository.findByUidAndDate(dto.getUid(), dto.getDate())
-                    .orElse(null);
+            BatteryEntity entity = batteryRepository.findByUid(dto.getUid());
 
             if (entity == null) return BatteryResponseDto.batteryNotFound();
 
