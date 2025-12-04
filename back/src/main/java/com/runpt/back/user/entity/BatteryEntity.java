@@ -20,6 +20,10 @@ public class BatteryEntity {
 
     private String date;
 
+    private String feedback;
+
+    private String reason;
+
     private float battery;
 
     @Column(columnDefinition = "TEXT")

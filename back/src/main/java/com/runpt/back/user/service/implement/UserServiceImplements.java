@@ -318,86 +318,98 @@ public class UserServiceImplements implements UserService {
             headers.setContentType(MediaType.APPLICATION_JSON);
 
             RunningToAIRequestDto aiDto = new RunningToAIRequestDto(
-                    dto.getUid(),
-                    dto.getDate().toString(),
-                    dto.getDistance(),
-                    String.valueOf(dto.getPace()),
-                    dto.getDurationSec(),
-                    dto.getHeartRateAvg()
+                dto.getUid(),                     // user_id
+                dto.getDate().toString(),         // date
+                dto.getDistance(),                // distance
+                dto.getPace(),                    // pace_sec  (String -> int 변경)
+                dto.getDurationSec(),             // time_sec
+                dto.getHeartRateAvg()             // avg_hr
             );
 
             HttpEntity<RunningToAIRequestDto> entity = new HttpEntity<>(aiDto, headers);
             RestTemplate rt = new RestTemplate();
 
-            String res = rt.postForObject(url, entity, String.class);
+            ResponseEntity<String> response = rt.postForEntity(url, entity, String.class);
 
-            System.out.println("[AI RUNNING SEND] SUCCESS → " + res);
+            System.out.println("[AI RUNNING SEND] STATUS → " + response.getStatusCode());
+            System.out.println("[AI RUNNING SEND] RESPONSE → " + response.getBody());
 
         } catch (Exception e) {
             System.out.println("[AI RUNNING SEND] ERROR: " + e.getMessage());
             e.printStackTrace();
         }
     }
-    
-    // AI 서버에서 배터리 정보 받아와서 DB에 저장 + 엔티티 반환
+
     private void getBatteryInfo(Long uid, String date) {
         System.out.println("===== [AI BATTERY REQUEST START] =====");
         System.out.println("UID = " + uid);
         System.out.println("DATE = " + date);
 
         try {
-            // 1) 외부 AI URL
-            String url = "http://13.124.197.160:8000/battery";
+            RestTemplate rt = new RestTemplate();
 
-            // 2) HTTP 헤더 설정
+            // -----------------------------------
+            // 1) 배터리 점수 요청 (/battery/score)
+            // -----------------------------------
+            String scoreUrl = "http://13.124.197.160:8000/battery/score";
+
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
 
-            // 3) 요청 바디 DTO 생성
             BatteryToAiRequestDto dto = new BatteryToAiRequestDto(uid, date);
-
-            // 4) HttpEntity 생성
             HttpEntity<BatteryToAiRequestDto> req = new HttpEntity<>(dto, headers);
 
-            // 5) RestTemplate 생성 후 호출
-            RestTemplate rt = new RestTemplate();
-            JsonNode aiRes = rt.postForObject(url, req, JsonNode.class);
+            JsonNode scoreRes = rt.postForObject(scoreUrl, req, JsonNode.class);
 
-            System.out.println("---- AI RAW RESPONSE ----");
-            System.out.println(aiRes == null ? "NULL RESPONSE" : aiRes.toPrettyString());
+            System.out.println("---- AI SCORE RESPONSE ----");
+            System.out.println(scoreRes == null ? "NULL" : scoreRes.toPrettyString());
 
-            if (aiRes == null) {
-                throw new RuntimeException("AI 응답이 NULL입니다.");
+            if (scoreRes == null || !scoreRes.has("battery_score")) {
+                throw new RuntimeException("AI 점수 응답이 잘못되었습니다.");
             }
 
-            // 6) JSON 파싱
-            if (!aiRes.has("battery_score")) {
-                throw new RuntimeException("AI 응답에 battery_score 필드가 없습니다.");
-            }
-            float battery = aiRes.get("battery_score").floatValue();
+            float battery = (float) scoreRes.get("battery_score").asDouble();
+            String feedback = scoreRes.has("feedback") ? scoreRes.get("feedback").asText() : null;
+            String reason = scoreRes.has("reason") ? scoreRes.get("reason").asText() : null;
 
-            JsonNode recNode = aiRes.get("recommendations");
-            if (recNode == null || !recNode.isArray()) {
-                throw new RuntimeException("AI 응답에 recommendations 배열이 없습니다.");
-            }
 
-            String recommendationsJson = recNode.toString();
+            // -----------------------------------
+            // 2) 추천 요청 (/battery/recommendation)
+            // -----------------------------------
+            String recUrl = "http://13.124.197.160:8000/battery/recommendations";
 
-            // 7) DB UPSERT
-            BatteryEntity entity = batteryRepository.findByUid(uid);
-            if (entity == null) {
-                entity = new BatteryEntity();
-                entity.setUid(uid);
-                entity.setDate(date);
-                
+            JsonNode recRes = rt.postForObject(recUrl, req, JsonNode.class);
+
+            System.out.println("---- AI RECOMMENDATION RESPONSE ----");
+            System.out.println(recRes == null ? "NULL" : recRes.toPrettyString());
+
+            if (recRes == null || !recRes.has("recommendations")) {
+                throw new RuntimeException("AI 추천 응답이 잘못되었습니다.");
             }
 
+            String recommendationsJson = recRes.get("recommendations").toString();
 
-            entity.setBattery(battery);
-            entity.setDate(date);
-            entity.setRecommendationsJson(recommendationsJson);
 
-            batteryRepository.save(entity);
+            // -----------------------------------
+            // 3) DB UPSERT
+            // -----------------------------------
+            BatteryEntity batteryEntity = batteryRepository.findByUid(uid);
+            if (batteryEntity == null) {
+                batteryEntity = new BatteryEntity();
+                batteryEntity.setUid(uid);
+            }else {
+                batteryRepository.delete(batteryEntity);
+                batteryEntity = new BatteryEntity();
+                batteryEntity.setUid(uid);
+            }
+
+            batteryEntity.setDate(date);
+            batteryEntity.setBattery(battery);
+            batteryEntity.setFeedback(feedback);
+            batteryEntity.setReason(reason);
+            batteryEntity.setRecommendationsJson(recommendationsJson);
+
+            batteryRepository.save(batteryEntity);
 
         } catch (Exception e) {
             System.out.println("===== [AI BATTERY ERROR OCCURRED] =====");

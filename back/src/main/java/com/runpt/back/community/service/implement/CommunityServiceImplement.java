@@ -367,7 +367,7 @@ public class CommunityServiceImplement implements CommunityService {
     // 티어 계산 헬퍼 메서드: 기록이 없거나 3km 미만이면 UNRANKED 반환
     private String getTierWithUnrankedCheck(Long uid) {
         // 최근 러닝 기록 확인
-        int distance = runningSessionRepository.findByUidOrderByDateDesc(uid)
+        int distance = runningSessionRepository.findTop1ByUidOrderByDateDesc(uid)
                 .map(RunningSessionEntity::getDistance)
                 .orElse(0);
 

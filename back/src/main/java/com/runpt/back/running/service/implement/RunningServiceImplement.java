@@ -12,7 +12,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.runpt.back.global.dto.ResponseDto;
 import com.runpt.back.running.dto.request.*;
 import com.runpt.back.running.dto.response.*;
-import com.runpt.back.running.dto.response.BatteryResponseDto.RecommendationDto;
 import com.runpt.back.running.service.RunningService;
 import com.runpt.back.user.entity.BatteryEntity;
 import com.runpt.back.user.repository.BatteryRepository;
@@ -33,20 +32,19 @@ public class RunningServiceImplement implements RunningService {
         List<RunningRecommendationDto> recommendations = null;
 
         try {
-            
+
             if (uid == null) return RunningResponseDto.uidNotExists();
             if (date == null || date.isBlank()) return RunningResponseDto.dateNotExists();
 
-            
             BatteryEntity battery = batteryRepository.findByUidAndDate(uid, date)
                     .orElse(null);
 
             if (battery == null) return RunningResponseDto.batteryNotFound();
 
+            // 🔥 엔티티 변경 후에도 recommendationsJson 사용은 동일
             String json = battery.getRecommendationsJson();
 
             if (json == null || json.isBlank()) {
-                
                 recommendations = Collections.emptyList();
             } else {
                 try {
@@ -56,7 +54,6 @@ public class RunningServiceImplement implements RunningService {
                     );
                 } catch (JsonProcessingException e) {
                     e.printStackTrace();
-                    recommendations = Collections.emptyList();  // 파싱 실패 시 안전 처리
                     return RunningResponseDto.recommendationParseError();
                 }
             }
@@ -65,18 +62,28 @@ public class RunningServiceImplement implements RunningService {
             e.printStackTrace();
             return ResponseDto.databaseError();
         }
+
         return RunningResponseDto.success(uid, date, recommendations);
     }
+
 
     @Override
     public ResponseEntity<? super BatteryResponseDto> getBattery(BatteryRequestDto dto) {
         float battery = 0;
-        List<RecommendationDto> recommendations = null;
+        String feedback = null;
+        String reason = null;
+        List<RunningRecommendationDto> recommendations = null;
+
         try {
             BatteryEntity entity = batteryRepository.findByUidAndDate(dto.getUid(), dto.getDate())
                     .orElse(null);
 
             if (entity == null) return BatteryResponseDto.batteryNotFound();
+
+            // 🔥 엔티티에서 직접 값 추출
+            battery = entity.getBattery();
+            feedback = entity.getFeedback();
+            reason = entity.getReason();
 
             // JSON 파싱
             recommendations = Collections.emptyList();
@@ -84,21 +91,21 @@ public class RunningServiceImplement implements RunningService {
                 try {
                     recommendations = objectMapper.readValue(
                             entity.getRecommendationsJson(),
-                            new TypeReference<List<RecommendationDto>>() {}
+                            new TypeReference<List<RunningRecommendationDto>>() {}
                     );
                 } catch (JsonProcessingException e) {
                     e.printStackTrace();
                     return BatteryResponseDto.recommendationParseError();
-                }   
+                }
             }
-            
-            battery = entity.getBattery();
 
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseDto.databaseError();
         }
-        return BatteryResponseDto.success(battery, recommendations);
+
+        return BatteryResponseDto.success(battery, feedback, reason, recommendations);
     }
+
 }
 

@@ -2,9 +2,14 @@ package com.runpt.back.home.dto.response;
 
 import com.runpt.back.global.dto.ResponseDto;
 
+import java.util.List;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import com.runpt.back.home.common.HomeResponseMessage;
+import com.runpt.back.user.entity.BatteryEntity;
+import com.runpt.back.user.entity.RunningSessionEntity;
+import com.runpt.back.user.entity.TierEntity;
 import com.runpt.back.home.common.HomeResponseCode;
 
 import lombok.Getter;
@@ -17,39 +22,35 @@ public class HomeResponseDto extends ResponseDto {
     private Long uid;
     private String date;
     private String nickname;
-    private float battery;
-    private HomeRecommendationDto recommendation;
-    private int distance;
-    private String tier;
+    private BatteryEntity battery;
+    private TierEntity tier;
+    private List<RunningSessionEntity> runningSession;
 
     public HomeResponseDto(Long uid,
                            String date,
                            String nickname,
-                           float battery,
-                           HomeRecommendationDto recommendation,
-                           int distance,
-                           String tier) {
+                           BatteryEntity battery,
+                           TierEntity tier,
+                           List<RunningSessionEntity> runningSession) {
 
         this.uid = uid;
         this.date = date;
         this.nickname = nickname;
         this.battery = battery;
-        this.recommendation = recommendation;
-        this.distance = distance;
         this.tier = tier;
+        this.runningSession = runningSession;
     }
 
     public static ResponseEntity<? super HomeResponseDto> success(
            Long uid,
            String date,
            String nickname,
-           float battery,
-           HomeRecommendationDto recommendation,
-           int distance,
-           String tier) {
+           BatteryEntity battery,
+           TierEntity tier,
+           List<RunningSessionEntity> runningSession) {
 
         HomeResponseDto responseBody =
-            new HomeResponseDto(uid, date, nickname, battery, recommendation, distance, tier);
+            new HomeResponseDto(uid, date, nickname, battery, tier, runningSession);
 
         return ResponseEntity.status(HttpStatus.OK).body(responseBody);
     }

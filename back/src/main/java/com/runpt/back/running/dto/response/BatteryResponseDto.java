@@ -10,7 +10,6 @@ import com.runpt.back.global.dto.ResponseDto;
 import com.runpt.back.running.common.RunningResponseCode;
 import com.runpt.back.running.common.RunningResponseMessage;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -18,37 +17,28 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class BatteryResponseDto extends ResponseDto {
 
-    // 명세서에 "battery_score" 라고 되어 있으면 이렇게 매핑
     @JsonProperty("battery_score")
     private float battery;
 
-    private List<RecommendationDto> recommendations;
+    private String feedback;
+    private String reason;
 
-    @Getter
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class RecommendationDto {
+    private List<RunningRecommendationDto> recommendations;
 
-        private String type;
-
-        @JsonProperty("distance_km")
-        private String distanceKm;
-
-        @JsonProperty("target_pace")   // 혹은 target_pace 라고 오면 거기에 맞춰 수정
-        private String paceMinPerKm;
-
-        @JsonProperty("reason")
-        private String note;              // 코멘트(reason)
-    }
-
-    public BatteryResponseDto(float battery, List<RecommendationDto> recommendations) {
+    public BatteryResponseDto(float battery, String feedback, String reason,
+                              List<RunningRecommendationDto> recommendations) {
         super();
         this.battery = battery;
+        this.feedback = feedback;
+        this.reason = reason;
         this.recommendations = recommendations;
     }
 
-    public static ResponseEntity<BatteryResponseDto> success(float battery, List<RecommendationDto> recommendations) {
-        return ResponseEntity.ok(new BatteryResponseDto(battery, recommendations));
+    public static ResponseEntity<BatteryResponseDto> success(float battery,
+                                                             String feedback,
+                                                             String reason,
+                                                             List<RunningRecommendationDto> recommendations) {
+        return ResponseEntity.ok(new BatteryResponseDto(battery, feedback, reason, recommendations));
     }
 
      public static ResponseEntity<ResponseDto> batteryNotFound() {

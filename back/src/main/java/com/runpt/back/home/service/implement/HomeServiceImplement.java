@@ -1,25 +1,25 @@
 package com.runpt.back.home.service.implement;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.runpt.back.global.dto.ResponseDto;
 import com.runpt.back.home.dto.request.HomeRequestDto;
-import com.runpt.back.home.dto.response.HomeRecommendationDto;
 import com.runpt.back.home.dto.response.HomeResponseDto;
 import com.runpt.back.home.service.HomeService;
 import com.runpt.back.user.entity.BatteryEntity;
 import com.runpt.back.user.entity.RunningSessionEntity;
+import com.runpt.back.user.entity.TierEntity;
 import com.runpt.back.user.entity.UserEntity;
 import com.runpt.back.user.repository.BatteryRepository;
 import com.runpt.back.user.repository.RunningSessionRepository;
 import com.runpt.back.user.repository.TierRepository;
 import com.runpt.back.user.repository.UserRepository;
-import com.runpt.back.user.util.TierCalculator;
 
 import lombok.RequiredArgsConstructor;
 
@@ -32,18 +32,15 @@ public class HomeServiceImplement implements HomeService {
     private final TierRepository tierRepository;
     private final RunningSessionRepository runningSessionRepository;
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
-
     @Override
     public ResponseEntity<? super HomeResponseDto> getHome(HomeRequestDto dto) {
-        int distance = 0;
         Long uid = dto.getUid();
         String date = dto.getDate();
         String nickname = null;
-        float batteryvalue = 0;
-        HomeRecommendationDto firstRecommendation = null;
-        String tier = null;
-
+        BatteryEntity battery = null;
+        TierEntity tier = null;
+        List<RunningSessionEntity> last7daysRuns = null;
+        
         try {
 
             if (uid == null) return HomeResponseDto.uidNotExists();
@@ -52,49 +49,27 @@ public class HomeServiceImplement implements HomeService {
             // 1) user table → nickname
             UserEntity user = userRepository.findById(uid).orElse(null);
             if (user == null) return HomeResponseDto.userNotExists();
+            tier = tierRepository.findByUid(uid);
 
             nickname = user.getNickname();
 
             // 2) battery table → batteryvalue + recommendationsJson
-            BatteryEntity battery = batteryRepository.findByUidAndDate(uid, date)
-                    .orElse(null);
+            battery = batteryRepository.findByUid(uid);
+
             if (battery == null) return HomeResponseDto.batteryNotFound();
 
-            batteryvalue = battery.getBattery();
+            //최근 7일간 running session 정보 가져오기
+            LocalDate targetDate = LocalDate.parse(date, DateTimeFormatter.ISO_DATE);
+            LocalDateTime end = targetDate.atTime(23, 59, 59);
+            LocalDateTime start = targetDate.minusDays(6).atStartOfDay(); // 날짜 포함 7일간
 
-            // recommendationsJson → 첫 번째 추천만 꺼내기
-            
-
-            if (battery.getRecommendationsJson() != null) {
-                List<HomeRecommendationDto> recommendations;
-                try {
-                    recommendations = objectMapper.readValue(
-                            battery.getRecommendationsJson(),
-                            new TypeReference<List<HomeRecommendationDto>>() {}
-                    );
-                    if (!recommendations.isEmpty()) {
-                        firstRecommendation = recommendations.get(0);
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    return HomeResponseDto.recommendationParamError();
-                }
-            }
-
-            // 3) runningsession → 최근 distance
-            distance =  runningSessionRepository.findByUidOrderByDateDesc(uid)
-                    .map(RunningSessionEntity::getDistance)
-                    .orElse(0);
-
-            // 4) tierrecord → 모든 카테고리 중 가장 높은 티어
-            tier = tierRepository.findOneByUid(uid)
-                    .map(TierCalculator::getHighestTierFromEntity)
-                    .orElse("UNRANKED");
+            last7daysRuns = runningSessionRepository
+                    .findByUidAndDateBetweenOrderByDateDesc(uid, start, end);
 
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseDto.databaseError();
         }
-        return HomeResponseDto.success(uid, date, nickname, batteryvalue, firstRecommendation, distance, tier);
+        return HomeResponseDto.success(uid, date, nickname, battery, tier, last7daysRuns);
     }
 }
