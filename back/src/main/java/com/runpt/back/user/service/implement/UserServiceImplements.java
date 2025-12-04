@@ -397,6 +397,10 @@ public class UserServiceImplements implements UserService {
             if (batteryEntity == null) {
                 batteryEntity = new BatteryEntity();
                 batteryEntity.setUid(uid);
+            }else {
+                batteryRepository.delete(batteryEntity);
+                batteryEntity = new BatteryEntity();
+                batteryEntity.setUid(uid);
             }
 
             batteryEntity.setDate(date);
