@@ -34,13 +34,14 @@ public class RunningServiceImplement implements RunningService {
 
         try {
             
-            if (uid == null) throw new RuntimeException("요청 uid가 null 입니다");
-            if (date == null || date.isBlank()) throw new RuntimeException("요청 date가 비어있습니다");
+            if (uid == null) return RunningResponseDto.uidNotExists();
+            if (date == null || date.isBlank()) return RunningResponseDto.dateNotExists();
 
             
             BatteryEntity battery = batteryRepository.findByUidAndDate(uid, date)
-                    .orElseThrow(() -> new RuntimeException(
-                            "Battery 데이터 없음 → uid=" + uid + ", date=" + date));
+                    .orElse(null);
+
+            if (battery == null) return RunningResponseDto.batteryNotFound();
 
             String json = battery.getRecommendationsJson();
 
@@ -56,6 +57,7 @@ public class RunningServiceImplement implements RunningService {
                 } catch (JsonProcessingException e) {
                     e.printStackTrace();
                     recommendations = Collections.emptyList();  // 파싱 실패 시 안전 처리
+                    return RunningResponseDto.recommendationParseError();
                 }
             }
 
@@ -72,15 +74,22 @@ public class RunningServiceImplement implements RunningService {
         List<RecommendationDto> recommendations = null;
         try {
             BatteryEntity entity = batteryRepository.findByUidAndDate(dto.getUid(), dto.getDate())
-                    .orElseThrow(() -> new RuntimeException("해당 날짜 데이터 없음"));
+                    .orElse(null);
+
+            if (entity == null) return BatteryResponseDto.batteryNotFound();
 
             // JSON 파싱
             recommendations = Collections.emptyList();
             if (entity.getRecommendationsJson() != null) {
-                recommendations = objectMapper.readValue(
-                        entity.getRecommendationsJson(),
-                        new TypeReference<List<RecommendationDto>>() {}
-                );
+                try {
+                    recommendations = objectMapper.readValue(
+                            entity.getRecommendationsJson(),
+                            new TypeReference<List<RecommendationDto>>() {}
+                    );
+                } catch (JsonProcessingException e) {
+                    e.printStackTrace();
+                    return BatteryResponseDto.recommendationParseError();
+                }   
             }
             
             battery = entity.getBattery();

@@ -29,26 +29,30 @@ public class TierEntity {
     @Column(nullable = false, unique = true)
     private long uid;
 
-    @Column(name = "short_tier_rank")
-    private String shortTierRank; // "BRONZE", "SILVER", "GOLD", etc.
+    @Column(name = "3km")
+    private String km3; // "BRONZE", "SILVER", "GOLD", etc.
 
-    @Column(name = "long_tier_rank")
-    private String longTierRank; // "BRONZE", "SILVER", "GOLD", etc.
+    @Column(name = "5km")
+    private String km5; // "BRONZE", "SILVER", "GOLD", etc.
 
-    @Column(name = "short_best_time")
-    private int shortBestTime; // 초 단위
+    @Column(name = "10km")
+    private String km10;
 
-    @Column(name = "long_best_time")
-    private int longBestTime; // 초 단위
+    @Column(name = "Half")
+    private String half;
+
+    @Column(name = "Full")
+    private String full;
 
     private LocalDateTime updatedAt;
 
     public TierEntity(long uid) {
         this.uid = uid;
-        this.shortTierRank = null;
-        this.longTierRank = null;
-        this.shortBestTime = 0;
-        this.longBestTime = 0;
+        this.km3 = null;
+        this.km5 = null;
+        this.km10 = null;
+        this.half = null;
+        this.full = null;
         this.updatedAt = LocalDateTime.now();
     }
 

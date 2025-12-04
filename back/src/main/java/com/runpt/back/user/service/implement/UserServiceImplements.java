@@ -107,12 +107,13 @@ public class UserServiceImplements implements UserService {
             }
 
             NaverUserInfo info = naverOauthHelper.getUserInfoFromToken(dto.getAccessToken());
-            if (info == null) {
-                return NaverLoginResponseDto.oauthApiError();
-            }
+
+            if (info == null) return NaverLoginResponseDto.oauthApiError();
 
             String naverId = info.getId();
-            nickname = info.getNickname();
+            if(naverId == null || naverId.trim().isEmpty()) {
+                return KakaoLoginResponseDto.oauthApiError();
+            }
 
             UserEntity user = userRepository.findByOauthProviderAndOauthUid("naver", naverId);
 
@@ -121,10 +122,11 @@ public class UserServiceImplements implements UserService {
                 user = new UserEntity();
                 user.setOauthProvider("naver");
                 user.setOauthUid(naverId);
-                user.setNickname(nickname != null ? nickname : "닉네임 없음");
+                user.setNickname(nickname != null ? info.getNickname() : "닉네임 없음");
                 userRepository.save(user);
             }
-
+            
+            nickname = user.getNickname();
             uid = user.getId();
 
             getBatteryInfo(uid, dto.getDate());
@@ -234,7 +236,21 @@ public class UserServiceImplements implements UserService {
                 tier = new TierEntity(dto.getUid());
             }
 
-            boolean isShort = dto.getDistance() <= 10000;
+            double dis = dto.getDistance();
+        
+
+            String category;
+            if (dis >= 3000 && dis < 5000)          category = "KM3";
+            else if (dis >= 5000 && dis < 10000)    category = "KM5";
+            else if (dis >= 10000 && dis < 21.0975)   category = "KM10";
+            else if (dis >= 21.0975 && dis < 42.195)   category = "HALF";
+            else if (dis >= 42.195)                      category = "FULL";
+            else if (dis < 3000)              category = "JOGGING";
+            else {
+                return SaveRunningResponseDto.invalidRunningData(); 
+            }
+
+            boolean isShort = category.equals("KM3") || category.equals("KM5") || category.equals("KM10");
 
             // 3) 이번 러닝의 티어 계산 = 초 단위 페이스
             TierCalculator.Tier newTier;
@@ -246,41 +262,32 @@ public class UserServiceImplements implements UserService {
                 return SaveRunningResponseDto.tierCalculationError();  
             }
 
-            // 4) best time = pace 로 저장
-            int newBestTime = dto.getPace();
+            // 4) 기존 티어와 비교하여 더 나은 티어면 업데이트
+            try {
+                String oldRank = switch (category) {
+                    case "KM3" -> tier.getKm3();
+                    case "KM5" -> tier.getKm5();
+                    case "KM10" -> tier.getKm10();
+                    case "HALF" -> tier.getHalf();
+                    case "FULL" -> tier.getFull();
+                    default -> null;
+                };
+
+                boolean isBetter = (oldRank == null) ||
+                        (TierCalculator.getTierPriority(newTier) >
+                         TierCalculator.getTierPriority(TierCalculator.Tier.valueOf(oldRank)));
+
+                if (isBetter) {
+                    switch (category) {
+                        case "KM3" -> tier.setKm3(newTier.name());
+                        case "KM5" -> tier.setKm5(newTier.name());
+                        case "KM10" -> tier.setKm10(newTier.name());
+                        case "HALF" -> tier.setHalf(newTier.name());
+                        case "FULL" -> tier.setFull(newTier.name());
+                    }
+                }
             
-            try{
-                if (isShort) {
-                TierCalculator.Tier oldTier = tier.getShortTierRank() != null
-                        ? TierCalculator.Tier.valueOf(tier.getShortTierRank())
-                        : null;
-
-                    if (oldTier == null ||
-                        TierCalculator.getTierPriority(newTier) > TierCalculator.getTierPriority(oldTier)) {
-                    tier.setShortTierRank(newTier.name());
-                    }
-
-                    if (tier.getShortBestTime() == 0 || newBestTime < tier.getShortBestTime()) {
-                    tier.setShortBestTime(newBestTime);
-                    }
-
-                } else {
-                    TierCalculator.Tier oldTier = tier.getLongTierRank() != null
-                            ? TierCalculator.Tier.valueOf(tier.getLongTierRank())
-                            : null;
-
-                if (oldTier == null ||
-                        TierCalculator.getTierPriority(newTier) > TierCalculator.getTierPriority(oldTier)) {
-                    tier.setLongTierRank(newTier.name());
-                }
-
-                if (tier.getLongBestTime() == 0 || newBestTime < tier.getLongBestTime()) {
-                    tier.setLongBestTime(newBestTime);
-                }
-            }
-
-            tierRepository.save(tier);
-
+                tierRepository.save(tier);
             } catch (Exception e) {
                 e.printStackTrace();
                 return SaveRunningResponseDto.tierSaveFailed();

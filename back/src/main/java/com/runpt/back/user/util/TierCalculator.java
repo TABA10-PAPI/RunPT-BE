@@ -1,5 +1,8 @@
 package com.runpt.back.user.util;
 
+import java.util.stream.Stream;
+
+import com.runpt.back.user.entity.TierEntity;
 import lombok.Getter;
 
 public class TierCalculator {
@@ -65,5 +68,15 @@ public class TierCalculator {
             if (getTierPriority(t) > getTierPriority(highest))
                 highest = t;
         return highest;
+    }
+
+    // 각 카테고리(3km, 5km, 10km, Half, Full) 중 가장 높은 티어 반환 
+    public static String getHighestTierFromEntity(TierEntity entity) {
+        if (entity == null) return "UNRANKED";
+        Tier[] tiers = Stream.of(entity.getKm3(), entity.getKm5(), entity.getKm10(), entity.getHalf(), entity.getFull())
+                .filter(s -> s != null)
+                .map(Tier::valueOf)
+                .toArray(Tier[]::new);
+        return tiers.length == 0 ? "UNRANKED" : getHighestTier(tiers).name();
     }
 }

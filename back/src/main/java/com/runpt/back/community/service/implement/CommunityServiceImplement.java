@@ -18,11 +18,14 @@ import com.runpt.back.community.service.CommunityService;
 import com.runpt.back.global.dto.ResponseDto;
 import com.runpt.back.user.repository.TierRepository;
 import com.runpt.back.user.repository.UserRepository;
+import com.runpt.back.user.repository.RunningSessionRepository;
 
 import jakarta.transaction.Transactional;
 
 import com.runpt.back.user.entity.TierEntity;
 import com.runpt.back.user.entity.UserEntity;
+import com.runpt.back.user.entity.RunningSessionEntity;
+import com.runpt.back.user.util.TierCalculator;
 
 import lombok.RequiredArgsConstructor;
 
@@ -35,6 +38,7 @@ public class CommunityServiceImplement implements CommunityService{
     private final UserRepository userRepository;
     private final TierRepository tierRepository;
     private final ParticipateRepository participaterepository;
+    private final RunningSessionRepository runningSessionRepository;
 
     @Override
     public ResponseEntity<? super PostResponseDto> post(PostRequestDto dto) {
@@ -45,8 +49,7 @@ public class CommunityServiceImplement implements CommunityService{
                 .map(user -> user.getNickname())
                 .orElse("알 수 없음");
 
-            TierEntity tierEntity = tierRepository.findByUid(uid);
-            String tier = (tierEntity != null) ? tierEntity.getShortTierRank() : "UNRANKED";
+            String tier = getTierWithUnrankedCheck(uid);
 
             LocalDateTime t = LocalDateTime.now();
             CommunityEntity entity = new CommunityEntity(dto, t, nickname, tier);
@@ -117,8 +120,7 @@ public class CommunityServiceImplement implements CommunityService{
                         .map(user -> user.getNickname())
                         .orElse("알 수 없음");
 
-                    TierEntity tierentity = tierRepository.findByUid(uid);
-                    String tier = (tierentity != null) ? tierentity.getShortTierRank() : "UNRANKED"; 
+                    String tier = getTierWithUnrankedCheck(uid);
 
                     return new CommunityCommentResponseDto(comment, nickname, tier);
                 })
@@ -238,8 +240,7 @@ public class CommunityServiceImplement implements CommunityService{
                 .map(user -> user.getNickname())
                 .orElse("알 수 없음");
 
-            TierEntity tierEntity = tierRepository.findByUid(uid);
-            String tier = (tierEntity != null) ? tierEntity.getShortTierRank() : "UNRANKED";
+            String tier = getTierWithUnrankedCheck(uid);
 
             ParticipateEntity entity = new ParticipateEntity(dto, nickname, tier);
             participaterepository.save(entity);
@@ -313,6 +314,23 @@ public class CommunityServiceImplement implements CommunityService{
             return ResponseDto.databaseError();
         }
         return CommentDeleteResponseDto.success();
+    }
+
+    // 티어 계산 헬퍼 메서드: 기록이 없거나 3km 미만이면 UNRANKED 반환
+    private String getTierWithUnrankedCheck(Long uid) {
+        // 최근 러닝 기록 확인
+        int distance = runningSessionRepository.findByUidOrderByDateDesc(uid)
+                .map(RunningSessionEntity::getDistance)
+                .orElse(0);
+
+        // 기록이 없거나 3km 미만이면 UNRANKED 반환
+        if (distance == 0 || distance < 3000) {
+            return "UNRANKED";
+        }
+
+        // 3km 이상 기록이 있으면 티어 계산
+        TierEntity tierEntity = tierRepository.findByUid(uid);
+        return TierCalculator.getHighestTierFromEntity(tierEntity);
     }
 
 }

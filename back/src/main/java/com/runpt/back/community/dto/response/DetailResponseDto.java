@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 
 import com.runpt.back.community.entity.CommunityEntity;
 import com.runpt.back.global.dto.ResponseDto;
+import com.runpt.back.community.common.*;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -54,6 +55,26 @@ public class DetailResponseDto extends ResponseDto{
     public static ResponseEntity<? super DetailResponseDto> success(CommunityEntity community, List<CommunityCommentResponseDto> comments) {
         DetailResponseDto responseBody = new DetailResponseDto(community, comments);
         return ResponseEntity.status(HttpStatus.OK).body(responseBody);
+    }
+
+    public static ResponseEntity<ResponseDto> communityNotFound() {
+        ResponseDto responseBody = new ResponseDto(communityResponseCode.COMMUNITY_NOT_FOUND, communityResponseMessage.COMMUNITY_NOT_FOUND);
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(responseBody);
+    }
+
+    public static ResponseEntity<ResponseDto> invalidId() {
+        ResponseDto responseBody = new ResponseDto(communityResponseCode.INVALID_ID, communityResponseMessage.INVALID_ID);
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(responseBody);
+    }
+
+    public static ResponseEntity<ResponseDto> commentNotFound() {
+        ResponseDto responseBody = new ResponseDto(communityResponseCode.COMMENT_NOT_FOUND, communityResponseMessage.COMMENT_NOT_FOUND);
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(responseBody);
+    }
+
+    public static ResponseEntity<ResponseDto> userNotExist() {
+        ResponseDto responseBody = new ResponseDto(communityResponseCode.USER_NOT_EXIST, communityResponseMessage.USER_NOT_EXIST);
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(responseBody);
     }
     
 }

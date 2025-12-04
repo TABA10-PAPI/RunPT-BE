@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 
 import com.runpt.back.community.entity.ParticipateEntity;
 import com.runpt.back.global.dto.ResponseDto;
+import com.runpt.back.community.common.*;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -24,4 +25,9 @@ public class CheckParticipateResponseDto extends ResponseDto{
         CheckParticipateResponseDto responseBody = new CheckParticipateResponseDto(participates);
         return ResponseEntity.status(HttpStatus.OK).body(responseBody);
     }
+
+    public static ResponseEntity<ResponseDto> invalidId() {
+        ResponseDto responseBody = new ResponseDto(communityResponseCode.INVALID_ID, communityResponseMessage.INVALID_ID);
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(responseBody);
+    }   
 }
