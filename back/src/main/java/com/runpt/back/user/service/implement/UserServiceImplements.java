@@ -393,19 +393,19 @@ public class UserServiceImplements implements UserService {
             // -------------------------------
             // 3) DB UPSERT
             // -------------------------------
-            BatteryEntity entity = batteryRepository.findByUid(uid);
-            if (entity == null) {
-                entity = new BatteryEntity();
-                entity.setUid(uid);
+            BatteryEntity batteryEntity = batteryRepository.findByUid(uid);
+            if (batteryEntity == null) {
+                batteryEntity = new BatteryEntity();
+                batteryEntity.setUid(uid);
             }
 
-            entity.setDate(date);
-            entity.setBattery(battery);
-            entity.setFeedback(feedback);
-            entity.setReason(reason);
-            entity.setRecommendationsJson(recommendationsJson);
+            batteryEntity.setDate(date);
+            batteryEntity.setBattery(battery);
+            batteryEntity.setFeedback(feedback);
+            batteryEntity.setReason(reason);
+            batteryEntity.setRecommendationsJson(recommendationsJson);
 
-            batteryRepository.save(entity);
+            batteryRepository.save(batteryEntity);
 
 
         } catch (Exception e) {
