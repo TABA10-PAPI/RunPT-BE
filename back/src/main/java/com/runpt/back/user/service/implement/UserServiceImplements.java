@@ -376,7 +376,7 @@ public class UserServiceImplements implements UserService {
             // -----------------------------------
             // 2) 추천 요청 (/battery/recommendation)
             // -----------------------------------
-            String recUrl = "http://13.124.197.160:8000/battery/recommendation";
+            String recUrl = "http://13.124.197.160:8000/battery/recommendations";
 
             JsonNode recRes = rt.postForObject(recUrl, req, JsonNode.class);
 
