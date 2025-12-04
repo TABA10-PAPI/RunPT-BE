@@ -2,7 +2,6 @@ package com.runpt.back.community.entity;
 
 import com.runpt.back.community.dto.request.ParticipateRequestDto;
 
-import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;

@@ -318,26 +318,28 @@ public class UserServiceImplements implements UserService {
             headers.setContentType(MediaType.APPLICATION_JSON);
 
             RunningToAIRequestDto aiDto = new RunningToAIRequestDto(
-                    dto.getUid(),
-                    dto.getDate().toString(),
-                    dto.getDistance(),
-                    String.valueOf(dto.getPace()),
-                    dto.getDurationSec(),
-                    dto.getHeartRateAvg()
+                dto.getUid(),                     // user_id
+                dto.getDate().toString(),         // date
+                dto.getDistance(),                // distance
+                dto.getPace(),                    // pace_sec  (String -> int 변경)
+                dto.getDurationSec(),             // time_sec
+                dto.getHeartRateAvg()             // avg_hr
             );
 
             HttpEntity<RunningToAIRequestDto> entity = new HttpEntity<>(aiDto, headers);
             RestTemplate rt = new RestTemplate();
 
-            String res = rt.postForObject(url, entity, String.class);
+            ResponseEntity<String> response = rt.postForEntity(url, entity, String.class);
 
-            System.out.println("[AI RUNNING SEND] SUCCESS → " + res);
+            System.out.println("[AI RUNNING SEND] STATUS → " + response.getStatusCode());
+            System.out.println("[AI RUNNING SEND] RESPONSE → " + response.getBody());
 
         } catch (Exception e) {
             System.out.println("[AI RUNNING SEND] ERROR: " + e.getMessage());
             e.printStackTrace();
         }
     }
+
     
     // AI 서버에서 배터리 정보 받아와서 DB에 저장 + 엔티티 반환
     private void getBatteryInfo(Long uid, String date) {

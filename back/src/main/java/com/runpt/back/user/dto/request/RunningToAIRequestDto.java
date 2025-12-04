@@ -1,15 +1,33 @@
 package com.runpt.back.user.dto.request;
 
-import lombok.AllArgsConstructor;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import lombok.Getter;
 
 @Getter
-@AllArgsConstructor
 public class RunningToAIRequestDto {
-    private long user_id;
+
+    @JsonProperty("user_id")
+    private int userId;
+
     private String date;
-    private int distance;
-    private String pace;
-    private int time_sec;
-    private int avg_hr;
+    private double distance;
+
+    @JsonProperty("pace_sec")
+    private int paceSec;
+
+    @JsonProperty("time_sec")
+    private int timeSec;
+
+    @JsonProperty("avg_hr")
+    private int avgHr;
+
+    public RunningToAIRequestDto(long userId, String date, double distance, int paceSec, int timeSec, int avgHr) {
+        this.userId = (int)userId;
+        this.date = date;
+        this.distance = (double)distance;
+        this.paceSec = paceSec;
+        this.timeSec = timeSec;
+        this.avgHr = avgHr;
+    }
 }
