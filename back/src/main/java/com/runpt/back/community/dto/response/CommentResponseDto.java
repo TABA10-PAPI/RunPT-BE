@@ -21,12 +21,12 @@ public class CommentResponseDto extends ResponseDto{
     }
 
     public static ResponseEntity<ResponseDto> uidNotExist() {
-        ResponseDto responseBody = new ResponseDto(communityResponseCode.UID_NOT_EXIST, communityResponseMessage.UID_NOT_EXIST);
+        ResponseDto responseBody = new ResponseDto(CommunityResponseCode.UID_NOT_EXIST, CommunityResponseMessage.UID_NOT_EXIST);
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(responseBody);
     }
 
     public static ResponseEntity<ResponseDto> invalidId() {
-        ResponseDto responseBody = new ResponseDto(communityResponseCode.INVALID_ID, communityResponseMessage.INVALID_ID);
+        ResponseDto responseBody = new ResponseDto(CommunityResponseCode.INVALID_ID, CommunityResponseMessage.INVALID_ID);
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(responseBody);
     }
 

@@ -27,7 +27,7 @@ public class CheckParticipateResponseDto extends ResponseDto{
     }
 
     public static ResponseEntity<ResponseDto> invalidId() {
-        ResponseDto responseBody = new ResponseDto(communityResponseCode.INVALID_ID, communityResponseMessage.INVALID_ID);
+        ResponseDto responseBody = new ResponseDto(CommunityResponseCode.INVALID_ID, CommunityResponseMessage.INVALID_ID);
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(responseBody);
     }   
 }

@@ -7,8 +7,8 @@ import org.springframework.http.ResponseEntity;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.runpt.back.global.dto.ResponseDto;
-import com.runpt.back.running.common.runningResponseCode;
-import com.runpt.back.running.common.runningResponseMessage;
+import com.runpt.back.running.common.RunningResponseCode;
+import com.runpt.back.running.common.RunningResponseMessage;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -52,12 +52,12 @@ public class BatteryResponseDto extends ResponseDto {
     }
 
      public static ResponseEntity<ResponseDto> batteryNotFound() {
-        ResponseDto responseBody = new ResponseDto(runningResponseCode.BATTERY_NOT_FOUND, runningResponseMessage.BATTERY_NOT_FOUND);
+        ResponseDto responseBody = new ResponseDto(RunningResponseCode.BATTERY_NOT_FOUND, RunningResponseMessage.BATTERY_NOT_FOUND);
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(responseBody);
     }
 
     public static ResponseEntity<ResponseDto> recommendationParseError() {
-        ResponseDto responseBody = new ResponseDto(runningResponseCode.RECOMMENDATION_PARSE_ERROR, runningResponseMessage.RECOMMENDATION_PARSE_ERROR);
+        ResponseDto responseBody = new ResponseDto(RunningResponseCode.RECOMMENDATION_PARSE_ERROR, RunningResponseMessage.RECOMMENDATION_PARSE_ERROR);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(responseBody);
     }
 }

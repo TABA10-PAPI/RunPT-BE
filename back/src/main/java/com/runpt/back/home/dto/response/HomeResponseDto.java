@@ -4,7 +4,8 @@ import com.runpt.back.global.dto.ResponseDto;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import com.runpt.back.home.common.*;
+import com.runpt.back.home.common.HomeResponseMessage;
+import com.runpt.back.home.common.HomeResponseCode;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -54,27 +55,27 @@ public class HomeResponseDto extends ResponseDto {
     }
 
     public static ResponseEntity<ResponseDto> uidNotExists() {
-        ResponseDto responseBody = new ResponseDto(homeResponseCode.UID_NOT_EXIST, homeResponseMessage.UID_NOT_EXIST);
+        ResponseDto responseBody = new ResponseDto(HomeResponseCode.UID_NOT_EXIST, HomeResponseMessage.UID_NOT_EXIST);
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(responseBody);
     }
 
     public static ResponseEntity<ResponseDto> dateNotExists() {
-        ResponseDto responseBody = new ResponseDto(homeResponseCode.DATE_NOT_EXIST, homeResponseMessage.DATE_NOT_EXIST);
+        ResponseDto responseBody = new ResponseDto(HomeResponseCode.DATE_NOT_EXIST, HomeResponseMessage.DATE_NOT_EXIST);
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(responseBody);
     }
 
     public static ResponseEntity<ResponseDto> batteryNotFound() {
-        ResponseDto responseBody = new ResponseDto(homeResponseCode.BATTERY_NOT_FOUND, homeResponseMessage.BATTERY_NOT_FOUND);
+        ResponseDto responseBody = new ResponseDto(HomeResponseCode.BATTERY_NOT_FOUND, HomeResponseMessage.BATTERY_NOT_FOUND);
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(responseBody);
     }
 
     public static ResponseEntity<ResponseDto> recommendationParamError() {
-        ResponseDto responseBody = new ResponseDto(homeResponseCode.RECOMMENDATRION_PARAM_ERROR, homeResponseMessage.RECOMMENDATRION_PARAM_ERROR);
+        ResponseDto responseBody = new ResponseDto(HomeResponseCode.RECOMMENDATRION_PARAM_ERROR, HomeResponseMessage.RECOMMENDATRION_PARAM_ERROR);
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseBody);
     }
 
     public static ResponseEntity<ResponseDto> userNotExists() {
-        ResponseDto responseBody = new ResponseDto(homeResponseCode.USER_NOT_EXIST, homeResponseMessage.USER_NOT_EXIST);
+        ResponseDto responseBody = new ResponseDto(HomeResponseCode.USER_NOT_EXIST, HomeResponseMessage.USER_NOT_EXIST);
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(responseBody);
     }
 }

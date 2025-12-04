@@ -58,22 +58,22 @@ public class DetailResponseDto extends ResponseDto{
     }
 
     public static ResponseEntity<ResponseDto> communityNotFound() {
-        ResponseDto responseBody = new ResponseDto(communityResponseCode.COMMUNITY_NOT_FOUND, communityResponseMessage.COMMUNITY_NOT_FOUND);
+        ResponseDto responseBody = new ResponseDto(CommunityResponseCode.COMMUNITY_NOT_FOUND, CommunityResponseMessage.COMMUNITY_NOT_FOUND);
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(responseBody);
     }
 
     public static ResponseEntity<ResponseDto> invalidId() {
-        ResponseDto responseBody = new ResponseDto(communityResponseCode.INVALID_ID, communityResponseMessage.INVALID_ID);
+        ResponseDto responseBody = new ResponseDto(CommunityResponseCode.INVALID_ID, CommunityResponseMessage.INVALID_ID);
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(responseBody);
     }
 
     public static ResponseEntity<ResponseDto> commentNotFound() {
-        ResponseDto responseBody = new ResponseDto(communityResponseCode.COMMENT_NOT_FOUND, communityResponseMessage.COMMENT_NOT_FOUND);
+        ResponseDto responseBody = new ResponseDto(CommunityResponseCode.COMMENT_NOT_FOUND, CommunityResponseMessage.COMMENT_NOT_FOUND);
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(responseBody);
     }
 
     public static ResponseEntity<ResponseDto> userNotExist() {
-        ResponseDto responseBody = new ResponseDto(communityResponseCode.USER_NOT_EXIST, communityResponseMessage.USER_NOT_EXIST);
+        ResponseDto responseBody = new ResponseDto(CommunityResponseCode.USER_NOT_EXIST, CommunityResponseMessage.USER_NOT_EXIST);
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(responseBody);
     }
     

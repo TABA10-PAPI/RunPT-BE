@@ -2,7 +2,7 @@ package com.runpt.back.community.common;
 
 import com.runpt.back.global.common.ResponseMessage;
 
-public interface communityResponseMessage extends ResponseMessage {
+public interface CommunityResponseMessage extends ResponseMessage {
     String UID_NOT_EXIST = "UID does not exist.";
     String USER_NOT_EXIST = "User does not exist.";
     String POST_NOT_FOUND = "Post does not exist.";

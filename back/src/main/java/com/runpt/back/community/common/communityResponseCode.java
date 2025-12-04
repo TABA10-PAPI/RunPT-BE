@@ -2,7 +2,7 @@ package com.runpt.back.community.common;
 
 import com.runpt.back.global.common.ResponseCode;
 
-public interface communityResponseCode extends ResponseCode {
+public interface CommunityResponseCode extends ResponseCode {
     String USER_NOT_EXIST = "UNE";
     String UID_NOT_EXIST = "UNE";
     String INVALID_ID = "IID";
