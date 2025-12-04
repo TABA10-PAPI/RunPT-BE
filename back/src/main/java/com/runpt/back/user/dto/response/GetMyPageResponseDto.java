@@ -18,6 +18,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
+@Getter
 @NoArgsConstructor
 public class GetMyPageResponseDto extends ResponseDto{
     UserEntity user;
@@ -25,6 +26,7 @@ public class GetMyPageResponseDto extends ResponseDto{
     List<RunningSessionEntity> recentRecords;
 
     public GetMyPageResponseDto(UserEntity user, TierEntity tier, List<RunningSessionEntity> records) {
+        super();
         this.user = user;
         this.tier = tier;
         this.recentRecords = records;

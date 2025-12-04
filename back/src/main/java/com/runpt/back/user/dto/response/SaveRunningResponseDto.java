@@ -7,10 +7,12 @@ import com.runpt.back.global.dto.ResponseDto;
 import com.runpt.back.user.common.UserResponseCode;
 import com.runpt.back.user.common.UserResponseMessage;
 
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Setter
+@Getter
 @NoArgsConstructor
 public class SaveRunningResponseDto extends ResponseDto{
     

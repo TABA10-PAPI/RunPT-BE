@@ -3,8 +3,6 @@ package com.runpt.back.user.dto.response;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-import com.runpt.back.global.common.ResponseCode;
-import com.runpt.back.global.common.ResponseMessage;
 import com.runpt.back.global.dto.ResponseDto;
 import com.runpt.back.user.common.UserResponseCode;
 import com.runpt.back.user.common.UserResponseMessage;

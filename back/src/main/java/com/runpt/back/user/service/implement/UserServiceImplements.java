@@ -71,7 +71,9 @@ public class UserServiceImplements implements UserService {
 
 
             String kakaoId = info.getId();
-            nickname = info.getNickname();
+            if(kakaoId == null || kakaoId.trim().isEmpty()) {
+                return KakaoLoginResponseDto.oauthApiError();
+            }
 
             UserEntity user = userRepository.findByOauthProviderAndOauthUid("kakao", kakaoId);
 
@@ -80,10 +82,11 @@ public class UserServiceImplements implements UserService {
                 user = new UserEntity();
                 user.setOauthProvider("kakao");
                 user.setOauthUid(kakaoId);
-                user.setNickname(nickname != null ? nickname : "닉네임 없음");
+                user.setNickname(info.getNickname() != null ? info.getNickname() : "닉네임 없음");
                 userRepository.save(user);
             }
 
+            nickname = user.getNickname();
             uid = user.getId();
 
             getBatteryInfo(uid, dto.getDate());
@@ -177,24 +180,27 @@ public class UserServiceImplements implements UserService {
 
     @Override
     public ResponseEntity<? super GetMyPageResponseDto> getMyPage(GetMyPageRequestDto dto) {
+        UserEntity user;
+        TierEntity tier;
+        List<RunningSessionEntity> recent;
         try {
-            UserEntity user = userRepository.findById(dto.getUid());
+            user = userRepository.findById(dto.getUid());
             if (user == null) return GetMyPageResponseDto.userNotExists();
 
-            TierEntity tier = tierRepository.findByUid(dto.getUid());
+            tier = tierRepository.findByUid(dto.getUid());  // 티어가 없을 수도 있음
             List<RunningSessionEntity> list =
                     runningSessionRepository.findByUidOrderByDateDesc(dto.getUid());
 
-            List<RunningSessionEntity> recent = list.stream()
+            recent = list.stream()
                     .limit(5)
                     .collect(Collectors.toList());
-
-            return GetMyPageResponseDto.getMyPageSuccess(user, tier, recent);
 
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseDto.databaseError();
         }
+        return GetMyPageResponseDto.getMyPageSuccess(user, tier, recent);
+
     }
 
 

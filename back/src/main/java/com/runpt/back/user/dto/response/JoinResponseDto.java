@@ -9,10 +9,12 @@ import com.runpt.back.user.common.UserResponseMessage;
 import com.runpt.back.user.entity.UserEntity;
 
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Setter
+@Getter
 @NoArgsConstructor
 @AllArgsConstructor
 public class JoinResponseDto extends ResponseDto{
