@@ -394,6 +394,7 @@ public class UserServiceImplements implements UserService {
 
 
             entity.setBattery(battery);
+            entity.setDate(date);
             entity.setRecommendationsJson(recommendationsJson);
 
             batteryRepository.save(entity);
