@@ -82,10 +82,9 @@ public class HomeServiceImplement implements HomeService {
             }
 
             // 3) runningsession → 최근 distance
-            distance =  runningSessionRepository.findByUidOrderByDateDesc(uid)
-                    .map(RunningSessionEntity::getDistance)
-                    .orElse(0);
-
+            distance = runningSessionRepository.findTop1ByUidOrderByDateDesc(uid)
+                .map(RunningSessionEntity::getDistance)
+                .orElse(0);
             // 4) tierrecord → 모든 카테고리 중 가장 높은 티어
             tier = tierRepository.findOneByUid(uid)
                     .map(TierCalculator::getHighestTierFromEntity)
