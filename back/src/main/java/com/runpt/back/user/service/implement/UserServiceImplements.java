@@ -340,8 +340,6 @@ public class UserServiceImplements implements UserService {
         }
     }
 
-    
-    // AI 서버에서 배터리 정보 받아와서 DB에 저장 + 엔티티 반환
     private void getBatteryInfo(Long uid, String date) {
         System.out.println("===== [AI BATTERY REQUEST START] =====");
         System.out.println("UID = " + uid);
@@ -350,9 +348,9 @@ public class UserServiceImplements implements UserService {
         try {
             RestTemplate rt = new RestTemplate();
 
-            // -------------------------------
+            // -----------------------------------
             // 1) 배터리 점수 요청 (/battery/score)
-            // -------------------------------
+            // -----------------------------------
             String scoreUrl = "http://13.124.197.160:8000/battery/score";
 
             HttpHeaders headers = new HttpHeaders();
@@ -366,17 +364,18 @@ public class UserServiceImplements implements UserService {
             System.out.println("---- AI SCORE RESPONSE ----");
             System.out.println(scoreRes == null ? "NULL" : scoreRes.toPrettyString());
 
-            if (scoreRes == null || !scoreRes.has("battery"))
+            if (scoreRes == null || !scoreRes.has("battery_score")) {
                 throw new RuntimeException("AI 점수 응답이 잘못되었습니다.");
+            }
 
-            float battery = scoreRes.get("battery").floatValue();
+            float battery = (float) scoreRes.get("battery_score").asDouble();
             String feedback = scoreRes.has("feedback") ? scoreRes.get("feedback").asText() : null;
             String reason = scoreRes.has("reason") ? scoreRes.get("reason").asText() : null;
 
 
-            // -------------------------------
+            // -----------------------------------
             // 2) 추천 요청 (/battery/recommendation)
-            // -------------------------------
+            // -----------------------------------
             String recUrl = "http://13.124.197.160:8000/battery/recommendation";
 
             JsonNode recRes = rt.postForObject(recUrl, req, JsonNode.class);
@@ -384,15 +383,16 @@ public class UserServiceImplements implements UserService {
             System.out.println("---- AI RECOMMENDATION RESPONSE ----");
             System.out.println(recRes == null ? "NULL" : recRes.toPrettyString());
 
-            if (recRes == null || !recRes.has("recommendations"))
+            if (recRes == null || !recRes.has("recommendations")) {
                 throw new RuntimeException("AI 추천 응답이 잘못되었습니다.");
+            }
 
             String recommendationsJson = recRes.get("recommendations").toString();
 
 
-            // -------------------------------
+            // -----------------------------------
             // 3) DB UPSERT
-            // -------------------------------
+            // -----------------------------------
             BatteryEntity batteryEntity = batteryRepository.findByUid(uid);
             if (batteryEntity == null) {
                 batteryEntity = new BatteryEntity();
@@ -406,7 +406,6 @@ public class UserServiceImplements implements UserService {
             batteryEntity.setRecommendationsJson(recommendationsJson);
 
             batteryRepository.save(batteryEntity);
-
 
         } catch (Exception e) {
             System.out.println("===== [AI BATTERY ERROR OCCURRED] =====");
