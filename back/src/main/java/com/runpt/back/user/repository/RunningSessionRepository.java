@@ -1,5 +1,6 @@
 package com.runpt.back.user.repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -12,4 +13,6 @@ public interface RunningSessionRepository extends JpaRepository<RunningSessionEn
 
     // 가장 최근 1개 조회
     Optional<RunningSessionEntity> findTop1ByUidOrderByDateDesc(Long uid);
+    List<RunningSessionEntity> findByUidAndDateBetweenOrderByDateDesc(Long uid, LocalDateTime start, LocalDateTime end);
+
 }
