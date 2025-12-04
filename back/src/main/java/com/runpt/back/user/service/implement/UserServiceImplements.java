@@ -248,9 +248,9 @@ public class UserServiceImplements implements UserService {
             String category;
             if (dis >= 3000 && dis < 5000)          category = "KM3";
             else if (dis >= 5000 && dis < 10000)    category = "KM5";
-            else if (dis >= 10000 && dis < 21.0975)   category = "KM10";
-            else if (dis >= 21.0975 && dis < 42.195)   category = "HALF";
-            else if (dis >= 42.195)                      category = "FULL";
+            else if (dis >= 10000 && dis < 21097.5)   category = "KM10";
+            else if (dis >= 21097.5 && dis < 42195)   category = "HALF";
+            else if (dis >= 42195)                      category = "FULL";
             else if (dis < 3000)              category = "JOGGING";
             else {
                 return SaveRunningResponseDto.invalidRunningData(); 
