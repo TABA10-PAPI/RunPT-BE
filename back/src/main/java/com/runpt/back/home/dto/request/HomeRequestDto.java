@@ -5,6 +5,5 @@ import lombok.Getter;
 @Getter
 public class HomeRequestDto {
     private Long uid;
-    
     private String date;
 }

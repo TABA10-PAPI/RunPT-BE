@@ -6,9 +6,11 @@ import org.springframework.http.ResponseEntity;
 import com.runpt.back.global.common.ResponseCode;
 import com.runpt.back.global.common.ResponseMessage;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @Getter
+@AllArgsConstructor
 public class ResponseDto {
     private String code;
     private String message;
@@ -16,11 +18,6 @@ public class ResponseDto {
     public ResponseDto() {
         this.code = ResponseCode.SUCCESS;
         this.message = ResponseMessage.SUCCESS;
-    }
-
-    public ResponseDto(String code, String message) {
-        this.code = code;
-        this.message = message;
     }
 
     public static ResponseEntity<ResponseDto> databaseError() {
