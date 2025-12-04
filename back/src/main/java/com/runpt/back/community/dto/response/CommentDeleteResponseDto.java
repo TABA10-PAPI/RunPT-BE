@@ -5,7 +5,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import com.runpt.back.global.dto.ResponseDto;
-import com.runpt.back.community.common.*;
+import com.runpt.back.community.common.CommunityResponseCode;
+import com.runpt.back.community.common.CommunityResponseMessage;
 
 import lombok.Getter;
 
