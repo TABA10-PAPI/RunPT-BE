@@ -15,4 +15,7 @@ public interface RunningSessionRepository extends JpaRepository<RunningSessionEn
     Optional<RunningSessionEntity> findTop1ByUidOrderByDateDesc(Long uid);
     List<RunningSessionEntity> findByUidAndDateBetweenOrderByDateDesc(Long uid, LocalDateTime start, LocalDateTime end);
 
+    // uid와 date로 중복 체크
+    Optional<RunningSessionEntity> findByUidAndDate(Long uid, LocalDateTime date);
+
 }

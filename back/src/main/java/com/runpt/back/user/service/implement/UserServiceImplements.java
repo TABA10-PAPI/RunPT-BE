@@ -1,6 +1,7 @@
 package com.runpt.back.user.service.implement;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.http.HttpEntity;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.runpt.back.global.dto.KakaoUserInfo;
 import com.runpt.back.global.dto.NaverUserInfo;
 import com.runpt.back.global.dto.ResponseDto;
@@ -32,6 +34,7 @@ import com.runpt.back.user.dto.response.JoinResponseDto;
 import com.runpt.back.user.dto.response.KakaoLoginResponseDto;
 import com.runpt.back.user.dto.response.SaveRunningResponseDto;
 import com.runpt.back.user.dto.response.NaverLoginResponseDto;
+import com.runpt.back.user.dto.response.RunningToAIResponseDto;
 
 import com.runpt.back.user.entity.UserEntity;
 import com.runpt.back.user.repository.TierRepository;
@@ -42,7 +45,9 @@ import com.runpt.back.user.service.UserService;
 import com.runpt.back.user.util.TierCalculator;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserServiceImplements implements UserService {
@@ -207,6 +212,15 @@ public class UserServiceImplements implements UserService {
     @Override
     public ResponseEntity<? super SaveRunningResponseDto> saveRunning(SaveRunningRequestDto dto) {
 
+        log.info("[SAVE RUNNING REQUEST] uid={}, date={}, pace={}, distance={}, durationSec={}, heartRateAvg={}",
+        dto.getUid(),
+        dto.getDate(),
+        dto.getPace(),
+        dto.getDistance(),
+        dto.getDurationSec(),
+        dto.getHeartRateAvg()
+        );
+
         try {
             if (dto.getUid() <= 0) return SaveRunningResponseDto.invalidRunningData();
             if (dto.getDate() == null) return SaveRunningResponseDto.invalidDateFormat();
@@ -219,6 +233,13 @@ public class UserServiceImplements implements UserService {
 
             UserEntity user = userRepository.findById(dto.getUid());
             if (user == null) return SaveRunningResponseDto.userNotExists();
+            
+            // 0) 중복 체크 - 같은 uid와 date로 이미 저장된 기록이 있는지 확인
+            Optional<RunningSessionEntity> existingSession = 
+                    runningSessionRepository.findByUidAndDate(dto.getUid(), dto.getDate());
+            if (existingSession.isPresent()) {
+                return SaveRunningResponseDto.runningSaveFailed(); // 또는 중복 에러 메시지
+            }
 
             // 1) 러닝 기록 저장
             try {
