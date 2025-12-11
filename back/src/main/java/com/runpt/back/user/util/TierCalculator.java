@@ -1,6 +1,8 @@
 package com.runpt.back.user.util;
 
-import java.util.stream.Stream;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 
 import com.runpt.back.user.entity.TierEntity;
 import lombok.Getter;
@@ -62,21 +64,33 @@ public class TierCalculator {
         };
     }
 
-    public static Tier getHighestTier(Tier... tiers) {
-        Tier highest = Tier.BRONZE;
-        for (Tier t : tiers)
-            if (getTierPriority(t) > getTierPriority(highest))
-                highest = t;
-        return highest;
-    }
+    public static String calculateHighestTier(TierEntity entity, int latestDistance) {
+        if (entity == null || latestDistance < 3000) {
+            return "UNRANKED";
+        }
 
-    // 각 카테고리(3km, 5km, 10km, Half, Full) 중 가장 높은 티어 반환 
-    public static String getHighestTierFromEntity(TierEntity entity) {
-        if (entity == null) return "UNRANKED";
-        Tier[] tiers = Stream.of(entity.getKm3(), entity.getKm5(), entity.getKm10(), entity.getHalf(), entity.getFull())
-                .filter(s -> s != null)
-                .map(Tier::valueOf)
-                .toArray(Tier[]::new);
-        return tiers.length == 0 ? "UNRANKED" : getHighestTier(tiers).name();
+        String[] tierStrings = {
+            entity.getKm3(),
+            entity.getKm5(),
+            entity.getKm10(),
+            entity.getHalf(),
+            entity.getFull()
+        };
+    
+        List<Tier> tierList = new ArrayList<>();
+        for (String s : tierStrings) {
+            if (s != null) {            
+                tierList.add(Tier.valueOf(s));
+            }
+        }
+    
+        if (tierList.isEmpty()) {
+            return "UNRANKED";
+        }
+        Tier highestTier = tierList.stream()
+                .max(Comparator.comparing(TierCalculator::getTierPriority))
+                .orElse(Tier.BRONZE);
+    
+        return highestTier.name();
     }
 }

@@ -16,7 +16,9 @@ public class BatteryEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Long uid;
+    @ManyToOne
+    @JoinColumn(name = "uid", referencedColumnName = "id", nullable = false)
+    private UserEntity user;
 
     private String date;
 

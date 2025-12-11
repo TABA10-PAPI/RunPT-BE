@@ -34,7 +34,6 @@ import com.runpt.back.user.dto.response.JoinResponseDto;
 import com.runpt.back.user.dto.response.KakaoLoginResponseDto;
 import com.runpt.back.user.dto.response.SaveRunningResponseDto;
 import com.runpt.back.user.dto.response.NaverLoginResponseDto;
-import com.runpt.back.user.dto.response.RunningToAIResponseDto;
 
 import com.runpt.back.user.entity.UserEntity;
 import com.runpt.back.user.repository.TierRepository;
@@ -171,7 +170,7 @@ public class UserServiceImplements implements UserService {
             user.setWeight(dto.getWeight());
             userRepository.save(user);
 
-            TierEntity tier = new TierEntity(dto.getUid());
+            TierEntity tier = new TierEntity(user);
             tierRepository.save(tier);
 
             return JoinResponseDto.joinSuccess(user);
@@ -244,7 +243,7 @@ public class UserServiceImplements implements UserService {
             // 1) 러닝 기록 저장
             try {
                 RunningSessionEntity session = new RunningSessionEntity();
-                session.setUid(dto.getUid());
+                session.setUser(user);
                 session.setDistance(dto.getDistance());
                 session.setDate(dto.getDate());
                 session.setDurationSec(dto.getDurationSec());
@@ -260,7 +259,7 @@ public class UserServiceImplements implements UserService {
             // 2) 티어 엔티티 조회
             TierEntity tier = tierRepository.findByUid(dto.getUid());
             if (tier == null) {
-                tier = new TierEntity(dto.getUid());
+                tier = new TierEntity(user);
             }
 
             double dis = dto.getDistance();
@@ -415,13 +414,17 @@ public class UserServiceImplements implements UserService {
             // 3) DB UPSERT
             // -----------------------------------
             BatteryEntity batteryEntity = batteryRepository.findByUid(uid);
+
+            UserEntity user = userRepository.findById(uid)
+                    .orElseThrow(() -> new RuntimeException("유저를 찾을 수 없습니다."));
+
             if (batteryEntity == null) {
                 batteryEntity = new BatteryEntity();
-                batteryEntity.setUid(uid);
+                batteryEntity.setUser(user);
             }else {
                 batteryRepository.delete(batteryEntity);
                 batteryEntity = new BatteryEntity();
-                batteryEntity.setUid(uid);
+                batteryEntity.setUser(user);
             }
 
             batteryEntity.setDate(date);

@@ -31,4 +31,14 @@ public class CommentResponseDto extends ResponseDto{
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(responseBody);
     }
 
+    public static ResponseEntity<ResponseDto> userNotExist() {
+        ResponseDto responseBody = new ResponseDto(CommunityResponseCode.USER_NOT_EXIST, CommunityResponseMessage.USER_NOT_EXIST);
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(responseBody);
+    }
+
+    public static ResponseEntity<ResponseDto> communityNotFound() {
+        ResponseDto responseBody = new ResponseDto(CommunityResponseCode.COMMUNITY_NOT_FOUND, CommunityResponseMessage.COMMUNITY_NOT_FOUND);
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(responseBody);
+    }
+
 }

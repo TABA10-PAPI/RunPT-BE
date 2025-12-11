@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "running_session",
+@Table(name = "running_session", 
        uniqueConstraints = @UniqueConstraint(columnNames = {"uid", "date"}))
 public class RunningSessionEntity {
 
@@ -18,8 +18,9 @@ public class RunningSessionEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = false)
-    private Long uid;
+    @ManyToOne
+    @JoinColumn(name = "uid", referencedColumnName = "id", nullable = false)
+    private UserEntity user;
 
     @Column(nullable = false)
     private int pace; // 1km 당 초 단위
@@ -35,24 +36,6 @@ public class RunningSessionEntity {
 
     @Column(name = "date", nullable = false)
     private LocalDateTime date;
-
-    /**
-     * 거리 타입 계산 (3KM, 5KM, 10KM, HALF, FULL)
-     */
-    public String getDistanceType() {
-        double distanceKm = distance / 1000.0;
-        if (distanceKm <= 3.5) {
-            return "3KM";
-        } else if (distanceKm <= 5.5) {
-            return "5KM";
-        } else if (distanceKm <= 10.5) {
-            return "10KM";
-        } else if (distanceKm <= 22.0) {
-            return "HALF";
-        } else {
-            return "FULL";
-        }
-    }
 }
 
 

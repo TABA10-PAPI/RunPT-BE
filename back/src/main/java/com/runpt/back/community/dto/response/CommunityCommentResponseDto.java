@@ -22,8 +22,8 @@ public class CommunityCommentResponseDto {
 
     public CommunityCommentResponseDto(CommentEntity comment , String nickname, String tier) {
         this.id = comment.getId();
-        this.communityid = comment.getCommunityid();
-        this.uid = comment.getUid();
+        this.communityid = comment.getCommunity().getId();
+        this.uid = comment.getUser().getId();
         this.content = comment.getContent();
         this.createAt = comment.getCreateAt();
         this.nickname = nickname;

@@ -1,12 +1,15 @@
 package com.runpt.back.community.entity;
 
 import com.runpt.back.community.dto.request.ParticipateRequestDto;
+import com.runpt.back.user.entity.UserEntity;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.JoinColumn;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -25,15 +28,16 @@ public class ParticipateEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Long communityid;
-    private Long uid;
-    private String nickname;
-    private String tier;
+    @ManyToOne
+    @JoinColumn(name = "uid", referencedColumnName = "id", nullable = false)
+    private UserEntity user;
 
-    public ParticipateEntity(ParticipateRequestDto dto, String nickname, String tier){
-        this.communityid = dto.getCommunityid();
-        this.uid = dto.getUid();
-        this.nickname = nickname;
-        this.tier = tier;
+    @ManyToOne
+    @JoinColumn(name = "communityid", referencedColumnName = "id", nullable = false)
+    private CommunityEntity community;
+
+    public ParticipateEntity(ParticipateRequestDto dto, UserEntity user, CommunityEntity community){
+        this.user = user;
+        this.community = community;
     }
 }

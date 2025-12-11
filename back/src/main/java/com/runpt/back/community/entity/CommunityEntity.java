@@ -5,6 +5,7 @@ import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
 import com.runpt.back.community.dto.request.*;
+import com.runpt.back.user.entity.UserEntity;
 
 
 import java.time.LocalDateTime;
@@ -21,7 +22,9 @@ public class CommunityEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
-    private Long uid;
+    @ManyToOne
+    @JoinColumn(name = "uid", referencedColumnName = "id", nullable = false)
+    private UserEntity user;
     private String title;
     private String startpoint;
     private int distance;
@@ -29,19 +32,17 @@ public class CommunityEntity {
     private String targetpace;
     private String targetgender;
     private String shortinfo;
+    private String tier; // 가장 높은 티어 저장
 
     private int participateuser;
-
-    private String nickname;
-    private String tier;
 
     private Long commentCount;
 
     @CreationTimestamp
     private LocalDateTime createAt;
 
-    public CommunityEntity(PostRequestDto dto, LocalDateTime time, String nickname, String tier){
-        this.uid = dto.getUid();
+    public CommunityEntity(PostRequestDto dto, LocalDateTime time, UserEntity user, String tier){
+        this.user = user;
         this.title = dto.getTitle();
         this.startpoint = dto.getStartpoint();
         this.distance = dto.getDistance();
@@ -49,10 +50,9 @@ public class CommunityEntity {
         this.targetpace = dto.getTargetpace();
         this.targetgender = dto.getTargetgender();
         this.shortinfo = dto.getShortinfo();
+        this.tier = tier;
         this.participateuser = 0;
         this.createAt = time;
-        this.nickname = nickname;
-        this.tier = tier;
     }
 
     public void update(ModifyRequestDto dto){

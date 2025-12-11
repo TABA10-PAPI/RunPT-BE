@@ -35,11 +35,11 @@ public class DetailResponseDto extends ResponseDto{
 
     private List<CommunityCommentResponseDto> comments;
 
-    public DetailResponseDto(CommunityEntity community,  List<CommunityCommentResponseDto> comments) {
+    public DetailResponseDto(CommunityEntity community, String nickname, String tier, List<CommunityCommentResponseDto> comments) {
         this.id = community.getId();              
-        this.uid = community.getUid();
-        this.nickname = community.getNickname();
-        this.tier = community.getTier();
+        this.uid = community.getUser().getId();
+        this.nickname = nickname;
+        this.tier = tier;
         this.title = community.getTitle();
         this.startpoint = community.getStartpoint();
         this.distance = community.getDistance();
@@ -53,8 +53,8 @@ public class DetailResponseDto extends ResponseDto{
         this.comments = comments;
     }
 
-    public static ResponseEntity<? super DetailResponseDto> success(CommunityEntity community, List<CommunityCommentResponseDto> comments) {
-        DetailResponseDto responseBody = new DetailResponseDto(community, comments);
+    public static ResponseEntity<? super DetailResponseDto> success(CommunityEntity community, String nickname, String tier, List<CommunityCommentResponseDto> comments) {
+        DetailResponseDto responseBody = new DetailResponseDto(community, nickname, tier, comments);
         return ResponseEntity.status(HttpStatus.OK).body(responseBody);
     }
 

@@ -3,7 +3,6 @@ package com.runpt.back.community.service.implement;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import org.springframework.boot.autoconfigure.security.SecurityProperties.User;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -54,11 +53,15 @@ public class CommunityServiceImplement implements CommunityService {
             if (user == null) {
                 return PostResponseDto.userNotExist();
             }
-            String nickname = user.getNickname();
-            String tier = getTierWithUnrankedCheck(uid);
+            
+            int distance = runningSessionRepository.findTop1ByUidOrderByDateDesc(uid)
+                    .map(RunningSessionEntity::getDistance)
+                    .orElse(0);
+            TierEntity tierEntity = tierRepository.findByUid(uid);
+            String tier = TierCalculator.calculateHighestTier(tierEntity, distance);
 
             LocalDateTime t = LocalDateTime.now();
-            CommunityEntity entity = new CommunityEntity(dto, t, nickname, tier);
+            CommunityEntity entity = new CommunityEntity(dto, t, user, tier);
             communityRepository.save(entity);
         } catch (Exception e) {
             e.printStackTrace();
@@ -140,17 +143,15 @@ public class CommunityServiceImplement implements CommunityService {
             try {
                 comments = commentList.stream()
                         .map(comment -> {
-                            Long uid = comment.getUid();
+                            Long uid = comment.getUser().getId();
 
-                            // 댓글 작성자 존재 여부 체크
-                            UserEntity user = userRepository.findById(uid).orElse(null);
-                            if (user == null) {
-                                // 스트림 내부이므로 RuntimeException 던져서 바깥에서 처리
-                                throw new RuntimeException(" 댓글 작성자 존재하지 않음 ");
-                            }
-
+                            UserEntity user = comment.getUser();
                             String nickname = user.getNickname();
-                            String tier = getTierWithUnrankedCheck(uid);
+                            int distance = runningSessionRepository.findTop1ByUidOrderByDateDesc(uid)
+                                    .map(RunningSessionEntity::getDistance)
+                                    .orElse(0);
+                            TierEntity tierEntity = tierRepository.findByUid(uid);
+                            String tier = TierCalculator.calculateHighestTier(tierEntity, distance);
 
                             return new CommunityCommentResponseDto(comment, nickname, tier);
                         })
@@ -164,14 +165,35 @@ public class CommunityServiceImplement implements CommunityService {
             return ResponseDto.databaseError();
         }
 
-        return DetailResponseDto.success(community, comments);
+        String nickname = community.getUser().getNickname();
+        Long uid = community.getUser().getId();
+        int distance = runningSessionRepository.findTop1ByUidOrderByDateDesc(uid)
+                .map(RunningSessionEntity::getDistance)
+                .orElse(0);
+        TierEntity tierEntity = tierRepository.findByUid(uid);
+        String tier = TierCalculator.calculateHighestTier(tierEntity, distance);
+
+        return DetailResponseDto.success(community, nickname, tier, comments);
     }
 
     @Override
     public ResponseEntity<? super CommentResponseDto> writeComment(CommentRequestDto dto) {
         try {
+            Long uid = dto.getUid();
+            Long communityid = dto.getCommunityid();
+            
+            UserEntity user = userRepository.findById(uid).orElse(null);
+            if (user == null) {
+                return CommentResponseDto.userNotExist();
+            }
+            
+            CommunityEntity community = communityRepository.findById(communityid).orElse(null);
+            if (community == null) {
+                return CommentResponseDto.communityNotFound();
+            }
+            
             LocalDateTime t = LocalDateTime.now();
-            CommentEntity comment = new CommentEntity(dto, t);
+            CommentEntity comment = new CommentEntity(dto, t, user, community);
 
             commentRepository.save(comment);
 
@@ -198,7 +220,7 @@ public class CommunityServiceImplement implements CommunityService {
 
             if (entity == null) return DeleteResponseDto.communityNotFound();
 
-            if (!entity.getUid().equals(uid)) {
+            if (!entity.getUser().getId().equals(uid)) {
                 return DeleteResponseDto.forbidden(); // 작성자가 아님
             }
 
@@ -230,7 +252,7 @@ public class CommunityServiceImplement implements CommunityService {
                     .orElse(null);
             if (entity == null) return ModifyResponseDto.communityNotFound();
 
-            if (!entity.getUid().equals(uid)) return ModifyResponseDto.forbidden(); // 작성자가 아님
+            if (!entity.getUser().getId().equals(uid)) return ModifyResponseDto.forbidden(); // 작성자가 아님
             
             entity.update(dto);
             communityRepository.save(entity);
@@ -268,16 +290,12 @@ public class CommunityServiceImplement implements CommunityService {
             community.increaseParticipant();
             communityRepository.save(community);
 
-            String nickname = userRepository.findById(uid)
-                    .map(user -> user.getNickname())
-                    .orElse(null);
-            if (nickname == null) {
+            UserEntity user = userRepository.findById(uid).orElse(null);
+            if (user == null) {
                 return ParticipateResponseDto.uidNotExist();
             }
 
-            String tier = getTierWithUnrankedCheck(uid);
-
-            ParticipateEntity entity = new ParticipateEntity(dto, nickname, tier);
+            ParticipateEntity entity = new ParticipateEntity(dto, user, community);
             participaterepository.save(entity);
         } catch (Exception e) {
             e.printStackTrace();
@@ -324,7 +342,6 @@ public class CommunityServiceImplement implements CommunityService {
 
     @Override
     public ResponseEntity<? super CheckParticipateResponseDto> checkparticipate(CheckParticipateRequestDto dto) {
-        Long uid = dto.getUid();
         Long communityid = dto.getCommunityid();
         List<ParticipateEntity> participates = null;
         try {
@@ -362,23 +379,6 @@ public class CommunityServiceImplement implements CommunityService {
             return ResponseDto.databaseError();
         }
         return CommentDeleteResponseDto.success();
-    }
-
-    // 티어 계산 헬퍼 메서드: 기록이 없거나 3km 미만이면 UNRANKED 반환
-    private String getTierWithUnrankedCheck(Long uid) {
-        // 최근 러닝 기록 확인
-        int distance = runningSessionRepository.findTop1ByUidOrderByDateDesc(uid)
-                .map(RunningSessionEntity::getDistance)
-                .orElse(0);
-
-        // 기록이 없거나 3km 미만이면 UNRANKED 반환
-        if (distance == 0 || distance < 3000) {
-            return "UNRANKED";
-        }
-
-        // 3km 이상 기록이 있으면 티어 계산
-        TierEntity tierEntity = tierRepository.findByUid(uid);
-        return TierCalculator.getHighestTierFromEntity(tierEntity);
     }
 
 }
