@@ -49,12 +49,12 @@ public class HomeServiceImplement implements HomeService {
             // 1) user table → nickname
             UserEntity user = userRepository.findById(uid).orElse(null);
             if (user == null) return HomeResponseDto.userNotExists();
-            tier = tierRepository.findByUid(uid);
+            tier = tierRepository.findByUser_Id(uid);
 
             nickname = user.getNickname();
 
             // 2) battery table → batteryvalue + recommendationsJson
-            battery = batteryRepository.findByUid(uid);
+            battery = batteryRepository.findByUser_Id(uid);
 
             if (battery == null) return HomeResponseDto.batteryNotFound();
 
@@ -64,7 +64,7 @@ public class HomeServiceImplement implements HomeService {
             LocalDateTime start = targetDate.minusDays(6).atStartOfDay(); // 날짜 포함 7일간
 
             last7daysRuns = runningSessionRepository
-                    .findByUidAndDateBetweenOrderByDateDesc(uid, start, end);
+                    .findByUser_IdAndDateBetweenOrderByDateDesc(uid, start, end);
 
         } catch (Exception e) {
             e.printStackTrace();

@@ -54,10 +54,10 @@ public class CommunityServiceImplement implements CommunityService {
                 return PostResponseDto.userNotExist();
             }
             
-            int distance = runningSessionRepository.findTop1ByUidOrderByDateDesc(uid)
+            int distance = runningSessionRepository.findTop1ByUser_IdOrderByDateDesc(uid)
                     .map(RunningSessionEntity::getDistance)
                     .orElse(0);
-            TierEntity tierEntity = tierRepository.findByUid(uid);
+            TierEntity tierEntity = tierRepository.findByUser_Id(uid);
             String tier = TierCalculator.calculateHighestTier(tierEntity, distance);
 
             LocalDateTime t = LocalDateTime.now();
@@ -105,7 +105,7 @@ public class CommunityServiceImplement implements CommunityService {
             // 3. 각 게시글에 댓글 수 채워넣기
             try {
                 for (CommunityEntity entity : entityList) {
-                    long commentCount = commentRepository.countByCommunityid(entity.getId());
+                    long commentCount = commentRepository.countByCommunity_Id(entity.getId());
                     entity.setCommentCount(commentCount);
                 }
             } catch (Exception e) {
@@ -135,7 +135,7 @@ public class CommunityServiceImplement implements CommunityService {
             if (community == null)
                 return DetailResponseDto.communityNotFound();
 
-            List<CommentEntity> commentList = commentRepository.findByCommunityidOrderByCreateAtAsc(id);
+            List<CommentEntity> commentList = commentRepository.findByCommunity_IdOrderByCreateAtAsc(id);
 
             if (commentList == null)
                 return DetailResponseDto.commentNotFound();
@@ -147,10 +147,10 @@ public class CommunityServiceImplement implements CommunityService {
 
                             UserEntity user = comment.getUser();
                             String nickname = user.getNickname();
-                            int distance = runningSessionRepository.findTop1ByUidOrderByDateDesc(uid)
+                            int distance = runningSessionRepository.findTop1ByUser_IdOrderByDateDesc(uid)
                                     .map(RunningSessionEntity::getDistance)
                                     .orElse(0);
-                            TierEntity tierEntity = tierRepository.findByUid(uid);
+                            TierEntity tierEntity = tierRepository.findByUser_Id(uid);
                             String tier = TierCalculator.calculateHighestTier(tierEntity, distance);
 
                             return new CommunityCommentResponseDto(comment, nickname, tier);
@@ -167,10 +167,10 @@ public class CommunityServiceImplement implements CommunityService {
 
         String nickname = community.getUser().getNickname();
         Long uid = community.getUser().getId();
-        int distance = runningSessionRepository.findTop1ByUidOrderByDateDesc(uid)
+        int distance = runningSessionRepository.findTop1ByUser_IdOrderByDateDesc(uid)
                 .map(RunningSessionEntity::getDistance)
                 .orElse(0);
-        TierEntity tierEntity = tierRepository.findByUid(uid);
+        TierEntity tierEntity = tierRepository.findByUser_Id(uid);
         String tier = TierCalculator.calculateHighestTier(tierEntity, distance);
 
         return DetailResponseDto.success(community, nickname, tier, comments);
@@ -224,13 +224,11 @@ public class CommunityServiceImplement implements CommunityService {
                 return DeleteResponseDto.forbidden(); // 작성자가 아님
             }
 
-            participaterepository.deleteAllByCommunityid(id);
+            participaterepository.deleteAllByCommunity_Id(id);
 
-            commentRepository.deleteAllByCommunityid(id);
+            commentRepository.deleteAllByCommunity_Id(id);
 
-            communityRepository.deleteByUidAndId(uid, id);
-            
-            participaterepository.deleteAllByCommunityid(id);
+            communityRepository.deleteByUser_IdAndId(uid, id);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -283,7 +281,7 @@ public class CommunityServiceImplement implements CommunityService {
                 return ParticipateResponseDto.communityNotFound();
             }
 
-            ParticipateEntity existingParticipation = participaterepository.findByUidAndCommunityid(uid, communityid);
+            ParticipateEntity existingParticipation = participaterepository.findByUser_IdAndCommunity_Id(uid, communityid);
             if (existingParticipation != null) {
                 return ParticipateResponseDto.alreadyParticipated();
             }
@@ -324,14 +322,14 @@ public class CommunityServiceImplement implements CommunityService {
             if (community == null) {
                 return ParticipateCancelResponseDto.communityNotFound();
             }   
-            ParticipateEntity existingParticipation = participaterepository.findByUidAndCommunityid(uid, communityid);
+            ParticipateEntity existingParticipation = participaterepository.findByUser_IdAndCommunity_Id(uid, communityid);
             if (existingParticipation == null) {
                 return ParticipateCancelResponseDto.notParticipated();
             }
             community.decreaseParticipant();
             communityRepository.save(community);
 
-            ParticipateEntity entity = participaterepository.findByUidAndCommunityid(uid, communityid);
+            ParticipateEntity entity = participaterepository.findByUser_IdAndCommunity_Id(uid, communityid);
             participaterepository.delete(entity);
         } catch (Exception e) {
             e.printStackTrace();
@@ -348,7 +346,7 @@ public class CommunityServiceImplement implements CommunityService {
             if (communityid == null || communityid <= 0) {
             return CheckParticipateResponseDto.invalidId();
             }
-            participates = participaterepository.findByCommunityid(communityid);
+            participates = participaterepository.findByCommunity_Id(communityid);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -368,11 +366,11 @@ public class CommunityServiceImplement implements CommunityService {
                 return CommentDeleteResponseDto.uidNotExist();
             }
             if (communityid == null || communityid <= 0) return CommentDeleteResponseDto.invalidId();
-            comment = commentRepository.findByUidAndCommunityid(uid, communityid);
+            comment = commentRepository.findByUser_IdAndCommunity_Id(uid, communityid);
             if (comment == null) {
                 return CommentDeleteResponseDto.commenNotFound();
             }
-            commentRepository.deleteAllByUidAndCommunityid(uid, communityid);
+            commentRepository.deleteAllByUser_IdAndCommunity_Id(uid, communityid);
 
         } catch (Exception e) {
             e.printStackTrace();

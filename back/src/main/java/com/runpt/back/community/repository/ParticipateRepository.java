@@ -7,8 +7,8 @@ import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface ParticipateRepository extends JpaRepository<ParticipateEntity, Long>{
-    ParticipateEntity findByUidAndCommunityid(Long uid, Long communityid);
-    void deleteAllByCommunityid(Long communityid);
-    List<ParticipateEntity> findByCommunityid(Long communityid);
+    ParticipateEntity findByUser_IdAndCommunity_Id(Long uid, Long communityid);
+    void deleteAllByCommunity_Id(Long communityid);
+    List<ParticipateEntity> findByCommunity_Id(Long communityid);
 
 }
