@@ -36,7 +36,8 @@ public class CommunityEntity {
 
     private int participateuser;
 
-    private Long commentCount;
+    @Column(nullable = false, columnDefinition = "BIGINT DEFAULT 0")
+    private long commentCount;
 
     @CreationTimestamp
     private LocalDateTime createAt;
@@ -52,6 +53,7 @@ public class CommunityEntity {
         this.shortinfo = dto.getShortinfo();
         this.tier = tier;
         this.participateuser = 0;
+        this.commentCount = 0;
         this.createAt = time;
     }
 
@@ -78,6 +80,8 @@ public class CommunityEntity {
     }
 
     public void decreaseCommentCount(){
-        this.commentCount -= 1;
+        if (this.commentCount > 0) {
+            this.commentCount -= 1;
+        }
     }
 }
