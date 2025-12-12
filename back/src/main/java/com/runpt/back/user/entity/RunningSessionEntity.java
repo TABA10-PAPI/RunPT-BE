@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "running_session", 
+@Table(name = "running_session",
        uniqueConstraints = @UniqueConstraint(columnNames = {"uid", "date"}))
 public class RunningSessionEntity {
 
