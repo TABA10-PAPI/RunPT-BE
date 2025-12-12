@@ -72,4 +72,12 @@ public class CommunityEntity {
     public void decreaseParticipant(){
         this.participateuser -= 1;
     }
+
+    public void increaseCommentCount(){
+        this.commentCount += 1;
+    }
+
+    public void decreaseCommentCount(){
+        this.commentCount -= 1;
+    }
 }

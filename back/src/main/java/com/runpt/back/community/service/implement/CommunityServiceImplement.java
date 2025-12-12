@@ -102,17 +102,6 @@ public class CommunityServiceImplement implements CommunityService {
                 return CommunityHomeResponseDto.userGenderInvalid();
             }
 
-            // 3. 각 게시글에 댓글 수 채워넣기
-            try {
-                for (CommunityEntity entity : entityList) {
-                    long commentCount = commentRepository.countByCommunity_Id(entity.getId());
-                    entity.setCommentCount(commentCount);
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-                return CommunityHomeResponseDto.commentCountError();
-            }
-
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseDto.databaseError();
@@ -195,6 +184,8 @@ public class CommunityServiceImplement implements CommunityService {
             LocalDateTime t = LocalDateTime.now();
             CommentEntity comment = new CommentEntity(dto, t, user, community);
 
+            community.increaseCommentCount();
+            communityRepository.save(community);
             commentRepository.save(comment);
 
         } catch (Exception e) {
@@ -370,7 +361,14 @@ public class CommunityServiceImplement implements CommunityService {
             if (comment == null) {
                 return CommentDeleteResponseDto.commenNotFound();
             }
-            commentRepository.deleteAllByUser_IdAndCommunity_Id(uid, communityid);
+            
+            CommunityEntity community = communityRepository.findById(communityid).orElse(null);
+            if (community != null) {;
+                commentRepository.delete(comment);
+                community.decreaseCommentCount();
+                communityRepository.save(community);
+            }
+            
 
         } catch (Exception e) {
             e.printStackTrace();
