@@ -9,13 +9,13 @@ import com.runpt.back.user.entity.RunningSessionEntity;
 public interface RunningSessionRepository extends JpaRepository<RunningSessionEntity, Long> {
 
     // 전체 리스트 조회 (최근순)
-    List<RunningSessionEntity> findByUidOrderByDateDesc(Long uid);
+    List<RunningSessionEntity> findByUser_IdOrderByDateDesc(Long uid);
 
     // 가장 최근 1개 조회
-    Optional<RunningSessionEntity> findTop1ByUidOrderByDateDesc(Long uid);
-    List<RunningSessionEntity> findByUidAndDateBetweenOrderByDateDesc(Long uid, LocalDateTime start, LocalDateTime end);
+    Optional<RunningSessionEntity> findTop1ByUser_IdOrderByDateDesc(Long uid);
+    List<RunningSessionEntity> findByUser_IdAndDateBetweenOrderByDateDesc(Long uid, LocalDateTime start, LocalDateTime end);
 
     // uid와 date로 중복 체크
-    Optional<RunningSessionEntity> findByUidAndDate(Long uid, LocalDateTime date);
+    Optional<RunningSessionEntity> findByUser_IdAndDate(Long uid, LocalDateTime date);
 
 }

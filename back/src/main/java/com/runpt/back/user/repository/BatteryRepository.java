@@ -8,6 +8,6 @@ import com.runpt.back.user.entity.BatteryEntity;
 
 public interface BatteryRepository extends JpaRepository<BatteryEntity, Long> {
 
-    Optional<BatteryEntity> findByUidAndDate(Long uid, String date);
-    BatteryEntity findByUid(Long uid);
+    Optional<BatteryEntity> findByUser_IdAndDate(Long uid, String date);
+    BatteryEntity findByUser_Id(Long uid);
 }

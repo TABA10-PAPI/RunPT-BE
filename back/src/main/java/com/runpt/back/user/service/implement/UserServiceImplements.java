@@ -191,9 +191,9 @@ public class UserServiceImplements implements UserService {
             user = userRepository.findById(dto.getUid());
             if (user == null) return GetMyPageResponseDto.userNotExists();
 
-            tier = tierRepository.findByUid(dto.getUid());  // 티어가 없을 수도 있음
+            tier = tierRepository.findByUser_Id(dto.getUid());  // 티어가 없을 수도 있음
             List<RunningSessionEntity> list =
-                    runningSessionRepository.findByUidOrderByDateDesc(dto.getUid());
+                    runningSessionRepository.findByUser_IdOrderByDateDesc(dto.getUid());
 
             recent = list.stream()
                     .limit(5)
@@ -235,7 +235,7 @@ public class UserServiceImplements implements UserService {
             
             // 0) 중복 체크 - 같은 uid와 date로 이미 저장된 기록이 있는지 확인
             Optional<RunningSessionEntity> existingSession = 
-                    runningSessionRepository.findByUidAndDate(dto.getUid(), dto.getDate());
+                    runningSessionRepository.findByUser_IdAndDate(dto.getUid(), dto.getDate());
             if (existingSession.isPresent()) {
                 return SaveRunningResponseDto.runningSaveFailed(); // 또는 중복 에러 메시지
             }
@@ -257,7 +257,7 @@ public class UserServiceImplements implements UserService {
             }
 
             // 2) 티어 엔티티 조회
-            TierEntity tier = tierRepository.findByUid(dto.getUid());
+            TierEntity tier = tierRepository.findByUser_Id(dto.getUid());
             if (tier == null) {
                 tier = new TierEntity(user);
             }
@@ -413,7 +413,7 @@ public class UserServiceImplements implements UserService {
             // -----------------------------------
             // 3) DB UPSERT
             // -----------------------------------
-            BatteryEntity batteryEntity = batteryRepository.findByUid(uid);
+            BatteryEntity batteryEntity = batteryRepository.findByUser_Id(uid);
 
             UserEntity user = userRepository.findById(uid)
                     .orElseThrow(() -> new RuntimeException("유저를 찾을 수 없습니다."));

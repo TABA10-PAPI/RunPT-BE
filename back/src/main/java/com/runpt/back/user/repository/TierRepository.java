@@ -7,6 +7,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import com.runpt.back.user.entity.TierEntity;
 
 public interface TierRepository extends JpaRepository<TierEntity, Long> {
-    TierEntity findByUid(long uid);
-    Optional<TierEntity> findOneByUid(long uid);
+    TierEntity findByUser_Id(long uid);
+    Optional<TierEntity> findOneByUser_Id(long uid);
 }
