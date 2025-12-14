@@ -8,7 +8,6 @@ import com.runpt.back.community.entity.CommentEntity;
 
 public interface CommentRepository  extends JpaRepository<CommentEntity, Long>{
     List<CommentEntity> findByCommunity_IdOrderByCreateAtAsc(Long communityid);
-    void deleteAllByCommunity_Id(Long communityid);
     CommentEntity findByUser_IdAndCommunity_Id(Long uid, Long Communityid);
     void deleteAllByUser_IdAndCommunity_Id(Long uid, Long Communityid);
 

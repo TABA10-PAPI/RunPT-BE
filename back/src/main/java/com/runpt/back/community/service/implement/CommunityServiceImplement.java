@@ -215,11 +215,8 @@ public class CommunityServiceImplement implements CommunityService {
                 return DeleteResponseDto.forbidden(); // 작성자가 아님
             }
 
-            participaterepository.deleteAllByCommunity_Id(id);
-
-            commentRepository.deleteAllByCommunity_Id(id);
-
-            communityRepository.deleteByUser_IdAndId(uid, id);
+          
+            communityRepository.delete(entity);
 
         } catch (Exception e) {
             e.printStackTrace();

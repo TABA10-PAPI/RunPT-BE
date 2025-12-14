@@ -7,7 +7,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import com.runpt.back.community.dto.request.*;
 import com.runpt.back.user.entity.UserEntity;
 
-
+import java.util.List;
 import java.time.LocalDateTime;
 
 @Entity
@@ -38,6 +38,12 @@ public class CommunityEntity {
 
     @Column(nullable = false, columnDefinition = "BIGINT DEFAULT 0")
     private long commentCount;
+
+    @OneToMany(mappedBy = "community", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<CommentEntity> comments;
+
+    @OneToMany(mappedBy = "community", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<ParticipateEntity> participates;
 
     @CreationTimestamp
     private LocalDateTime createAt;
