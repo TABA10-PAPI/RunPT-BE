@@ -29,24 +29,27 @@ jobs:
         working-directory: ./back
         run: |
           chmod +x gradlew
+          # 테스트는 건너뛰고 clean build 실행
           ./gradlew clean build -x test
 
-      # 💡 [핵심 수정 부분] 쉘 변수를 사용하여 JAR 파일을 안전하게 이동시킵니다.
-      - name: Locate and Move JAR file safely
+      # 💡 [핵심 수정 부분] 실행 가능한 JAR 파일(bootJar 결과물)만 찾아 이동시킵니다.
+      - name: Locate and Move Executable JAR file
         run: |
-          # 1. build/libs/ 폴더 내에 있는 첫 번째 JAR 파일을 변수에 할당합니다.
-          JAR_FILE=$(ls -1 ./back/build/libs/*.jar | head -n 1)
+          # *-plain.jar이 아닌, 실행 가능한 JAR 파일을 찾습니다. 
+          # 찾지 못하면 에러 발생 후 종료됩니다.
+          TARGET_JAR=$(find ./back/build/libs -maxdepth 1 -name "*.jar" ! -name "*-plain.jar" -print -quit)
           
-          echo "Discovered JAR file: $JAR_FILE"
+          echo "Discovered TARGET JAR file: $TARGET_JAR"
           
-          if [ -z "$JAR_FILE" ]; then
-              echo "Error: Could not locate any JAR file in ./back/build/libs/"
+          if [ -z "$TARGET_JAR" ]; then
+              echo "Error: Could not find the executable JAR file in ./back/build/libs/."
+              echo "Please check build.gradle for 'org.springframework.boot' plugin."
+              ls -l ./back/build/libs/ # 디버깅을 위해 빌드된 파일 목록 출력
               exit 1
           fi
           
-          # 2. 찾은 파일을 Dockerfile이 기대하는 이름으로 ./back/ 폴더로 이동
-          #    (back/ 폴더가 Docker 빌드 컨텍스트의 루트입니다.)
-          mv "$JAR_FILE" ./back/back-0.0.1-SNAPSHOT.jar
+          # 찾은 파일을 Dockerfile이 기대하는 이름으로 ./back/ 폴더로 이동
+          mv "$TARGET_JAR" ./back/back-0.0.1-SNAPSHOT.jar
           
           echo "Move complete. Listing contents of ./back/ for verification:"
           ls -l ./back/ # 이동 확인용 디버깅 명령
