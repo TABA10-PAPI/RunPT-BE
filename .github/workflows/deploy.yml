@@ -2,7 +2,7 @@ name: Docker-Based CI/CD for Spring Boot
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main" ] # main 브랜치에 푸시될 때마다 워크플로우 실행
 
 # 환경 변수 정의
 env:
@@ -31,11 +31,26 @@ jobs:
           chmod +x gradlew
           ./gradlew clean build -x test
 
-      # 💡 [필수 수정 반영] JAR 파일을 'back/' (빌드 컨텍스트 루트)로 이동합니다.
-      # Dockerfile의 COPY 명령 (COPY back-0.0.1-SNAPSHOT.jar app.jar)을 만족시키기 위함입니다.
-      - name: Rename and Move JAR file to Build Context Root
-        run: mv ./back/build/libs/*.jar ./back/back-0.0.1-SNAPSHOT.jar
-        
+      # 💡 [핵심 수정 부분] 쉘 변수를 사용하여 JAR 파일을 안전하게 이동시킵니다.
+      - name: Locate and Move JAR file safely
+        run: |
+          # 1. build/libs/ 폴더 내에 있는 첫 번째 JAR 파일을 변수에 할당합니다.
+          JAR_FILE=$(ls -1 ./back/build/libs/*.jar | head -n 1)
+          
+          echo "Discovered JAR file: $JAR_FILE"
+          
+          if [ -z "$JAR_FILE" ]; then
+              echo "Error: Could not locate any JAR file in ./back/build/libs/"
+              exit 1
+          fi
+          
+          # 2. 찾은 파일을 Dockerfile이 기대하는 이름으로 ./back/ 폴더로 이동
+          #    (back/ 폴더가 Docker 빌드 컨텍스트의 루트입니다.)
+          mv "$JAR_FILE" ./back/back-0.0.1-SNAPSHOT.jar
+          
+          echo "Move complete. Listing contents of ./back/ for verification:"
+          ls -l ./back/ # 이동 확인용 디버깅 명령
+
       # 1.2. Docker: 로그인 및 이미지 빌드/푸시
       - name: Docker Login
         uses: docker/login-action@v3
@@ -46,7 +61,7 @@ jobs:
       - name: Build and Push Docker Image to Docker Hub
         uses: docker/build-push-action@v5
         with:
-          # back/ 폴더를 기준으로 빌드 컨텍스트 지정
+          # Dockerfile이 있는 ./back 폴더를 빌드 컨텍스트로 지정
           context: ./back 
           push: true
           tags: ${{ secrets.DOCKER_HUB_USERNAME }}/${{ env.DOCKER_IMAGE_NAME }}:${{ env.IMAGE_TAG }}
@@ -54,7 +69,7 @@ jobs:
 
   # 2. EC2에 접속하여 최신 Docker 이미지로 컨테이너 교체 (CD 단계)
   deploy:
-    needs: build_and_push
+    needs: build_and_push # 1번 Job이 성공해야만 실행
     runs-on: ubuntu-latest
     steps:
       - name: Deploy to EC2 (Docker 컨테이너 교체)
@@ -74,15 +89,16 @@ jobs:
             echo "Pulling latest image: ${IMAGE_NAME}"
             docker pull ${IMAGE_NAME}
             
-            # 기존 컨테이너 정리
+            # 기존 컨테이너 중지 및 삭제
             if [ $(docker ps -a -q -f name=${CONTAINER_NAME}) ]; then
               echo "Stopping and removing existing container..."
               docker stop ${CONTAINER_NAME}
               docker rm ${CONTAINER_NAME}
             fi
             
-            # 새 컨테이너 실행 (DB 환경 변수 주입)
+            # 새 이미지로 컨테이너 실행 (DB 환경 변수 안전하게 주입)
             echo "Running new ${CONTAINER_NAME} container with DB Secrets..."
+            # -e 옵션을 사용하여 GitHub Secrets에 저장된 DB 정보를 전달
             docker run -d --name ${CONTAINER_NAME} \
               -p 127.0.0.1:8080:8080 \
               -e DB_END_POINT="${{ secrets.DB_END_POINT }}" \
