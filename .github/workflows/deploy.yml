@@ -1,51 +1,94 @@
-name: Deploy Spring Boot to EC2 (Ubuntu)
+name: Docker-Based CI/CD for Spring Boot
 
 on:
   push:
     branches: [ "main" ]
 
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
+# 환경 변수 정의
+env:
+  DOCKER_IMAGE_NAME: back-app
+  IMAGE_TAG: latest
 
+jobs:
+  # 1. 빌드 및 Docker Hub에 이미지 푸시 (CI 단계)
+  build_and_push:
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Set up JDK
+      # 1.1. CI: Spring Boot JAR 파일 빌드
+      - name: Set up JDK 21
         uses: actions/setup-java@v3
         with:
           java-version: '21'
           distribution: 'temurin'
+          cache: 'gradle'
 
-      - name: Build Spring Boot Project
+      - name: Build Spring Boot JAR (back/로 이동 및 빌드)
         working-directory: ./back
         run: |
           chmod +x gradlew
           ./gradlew clean build -x test
 
-      - name: Deploy to EC2 (nohup 방식)
-        env:
-          HOST: ${{ secrets.EC2_HOST }}
-          USER: ${{ secrets.EC2_USER }}
-          PRIVATE_KEY: ${{ secrets.EC2_KEY }}
-        run: |
-          echo "$PRIVATE_KEY" > key.pem
-          chmod 600 key.pem
+      # 💡 [필수 수정 반영] JAR 파일을 'back/' (빌드 컨텍스트 루트)로 이동합니다.
+      # Dockerfile의 COPY 명령 (COPY back-0.0.1-SNAPSHOT.jar app.jar)을 만족시키기 위함입니다.
+      - name: Rename and Move JAR file to Build Context Root
+        run: mv ./back/build/libs/*.jar ./back/back-0.0.1-SNAPSHOT.jar
+        
+      # 1.2. Docker: 로그인 및 이미지 빌드/푸시
+      - name: Docker Login
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_TOKEN }}
 
-          echo "🔐 Connecting to EC2..."
-          ssh -o StrictHostKeyChecking=no -i key.pem $USER@$HOST "echo 'Connected to EC2 ✔'"
+      - name: Build and Push Docker Image to Docker Hub
+        uses: docker/build-push-action@v5
+        with:
+          # back/ 폴더를 기준으로 빌드 컨텍스트 지정
+          context: ./back 
+          push: true
+          tags: ${{ secrets.DOCKER_HUB_USERNAME }}/${{ env.DOCKER_IMAGE_NAME }}:${{ env.IMAGE_TAG }}
+          file: ./back/Dockerfile
 
-          echo "📦 Uploading JAR..."
-          scp -o StrictHostKeyChecking=no -i key.pem back/build/libs/back-0.0.1-SNAPSHOT.jar $USER@$HOST:/home/ubuntu/app/
+  # 2. EC2에 접속하여 최신 Docker 이미지로 컨테이너 교체 (CD 단계)
+  deploy:
+    needs: build_and_push
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to EC2 (Docker 컨테이너 교체)
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_KEY }}
+          script: |
+            DOCKER_USER=${{ secrets.DOCKER_HUB_USERNAME }}
+            IMAGE_NAME=${DOCKER_USER}/${{ env.DOCKER_IMAGE_NAME }}:${{ env.IMAGE_TAG }}
+            CONTAINER_NAME=runpt-back
 
-          echo "📦 Uploading restart script..."
-          scp -o StrictHostKeyChecking=no -i key.pem back/script/restart.sh $USER@$HOST:/home/ubuntu/app/
-
-          echo "🔧 Applying permissions..."
-          ssh -o StrictHostKeyChecking=no -i key.pem $USER@$HOST "chmod +x /home/ubuntu/app/restart.sh"
-
-          echo "🚀 Restarting application..."
-          ssh -o StrictHostKeyChecking=no -i key.pem $USER@$HOST "/home/ubuntu/app/restart.sh"
-
-          echo "🎉 Deployment completed!"
+            echo "Login to Docker Hub..."
+            docker login -u ${DOCKER_USER} -p ${{ secrets.DOCKER_HUB_TOKEN }}
+            
+            echo "Pulling latest image: ${IMAGE_NAME}"
+            docker pull ${IMAGE_NAME}
+            
+            # 기존 컨테이너 정리
+            if [ $(docker ps -a -q -f name=${CONTAINER_NAME}) ]; then
+              echo "Stopping and removing existing container..."
+              docker stop ${CONTAINER_NAME}
+              docker rm ${CONTAINER_NAME}
+            fi
+            
+            # 새 컨테이너 실행 (DB 환경 변수 주입)
+            echo "Running new ${CONTAINER_NAME} container with DB Secrets..."
+            docker run -d --name ${CONTAINER_NAME} \
+              -p 127.0.0.1:8080:8080 \
+              -e DB_END_POINT="${{ secrets.DB_END_POINT }}" \
+              -e DB_USER="${{ secrets.DB_USER }}" \
+              -e DB_PASSWORD="${{ secrets.DB_PASSWORD }}" \
+              --restart unless-stopped \
+              ${IMAGE_NAME}
+            
+            echo "🎉 Deployment completed!"
