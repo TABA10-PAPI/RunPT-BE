@@ -22,9 +22,81 @@ public class HomeResponseDto extends ResponseDto {
     private Long uid;
     private String date;
     private String nickname;
-    private BatteryEntity battery;
-    private TierEntity tier;
-    private List<RunningSessionEntity> runningSession;
+    private BatteryInfo battery;
+    private TierInfo tier;
+    private List<RunningSessionInfo> runningSession;
+
+    @Getter
+    @NoArgsConstructor
+    public static class BatteryInfo {
+        private Long id;
+        private String date;
+        private String feedback;
+        private String reason;
+        private float battery;
+        private String recommendationsJson;
+
+        public BatteryInfo(BatteryEntity battery) {
+            if (battery != null) {
+                this.id = battery.getId();
+                this.date = battery.getDate();
+                this.feedback = battery.getFeedback();
+                this.reason = battery.getReason();
+                this.battery = battery.getBattery();
+                this.recommendationsJson = battery.getRecommendationsJson();
+            }
+        }
+    }
+
+    @Getter
+    @NoArgsConstructor
+    public static class TierInfo {
+        private Long id;
+        private Long uid;
+        private String km3;
+        private String km5;
+        private String km10;
+        private String half;
+        private String full;
+        private java.time.LocalDateTime updatedAt;
+
+        public TierInfo(TierEntity tier) {
+            if (tier != null) {
+                this.id = tier.getId();
+                this.uid = tier.getUser() != null ? tier.getUser().getId() : null;
+                this.km3 = tier.getKm3();
+                this.km5 = tier.getKm5();
+                this.km10 = tier.getKm10();
+                this.half = tier.getHalf();
+                this.full = tier.getFull();
+                this.updatedAt = tier.getUpdatedAt();
+            }
+        }
+    }
+
+    @Getter
+    @NoArgsConstructor
+    public static class RunningSessionInfo {
+        private Long id;
+        private Long uid;
+        private int pace;
+        private int distance;
+        private int durationSec;
+        private int heartRateAvg;
+        private java.time.LocalDateTime date;
+
+        public RunningSessionInfo(RunningSessionEntity session) {
+            if (session != null) {
+                this.id = session.getId();
+                this.uid = session.getUser() != null ? session.getUser().getId() : null;
+                this.pace = session.getPace();
+                this.distance = session.getDistance();
+                this.durationSec = session.getDurationSec();
+                this.heartRateAvg = session.getHeartRateAvg();
+                this.date = session.getDate();
+            }
+        }
+    }
 
     public HomeResponseDto(Long uid,
                            String date,
@@ -36,9 +108,10 @@ public class HomeResponseDto extends ResponseDto {
         this.uid = uid;
         this.date = date;
         this.nickname = nickname;
-        this.battery = battery;
-        this.tier = tier;
-        this.runningSession = runningSession;
+        this.battery = battery != null ? new BatteryInfo(battery) : null;
+        this.tier = tier != null ? new TierInfo(tier) : null;
+        this.runningSession = runningSession != null ? 
+            runningSession.stream().map(RunningSessionInfo::new).toList() : null;
     }
 
     public static ResponseEntity<? super HomeResponseDto> success(
