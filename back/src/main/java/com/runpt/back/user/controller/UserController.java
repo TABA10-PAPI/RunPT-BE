@@ -10,6 +10,7 @@ import com.runpt.back.user.dto.request.*;
 import com.runpt.back.user.dto.response.*;
 import com.runpt.back.user.service.UserService;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -53,6 +54,13 @@ public class UserController {
         @RequestBody SaveRunningRequestDto requestBody
     ) {
         return userService.saveRunning(requestBody);
+    }
+
+    @PostMapping("/add-user")
+    public ResponseEntity<? super AddUserResponseDto> addUser(
+        @RequestBody @Valid AddUserRequestDto requestBody
+    ) {
+        return userService.addUser(requestBody);
     }
     
 }

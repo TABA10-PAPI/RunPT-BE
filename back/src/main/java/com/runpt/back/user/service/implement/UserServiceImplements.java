@@ -12,7 +12,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.runpt.back.global.dto.KakaoUserInfo;
 import com.runpt.back.global.dto.NaverUserInfo;
 import com.runpt.back.global.dto.ResponseDto;
@@ -21,6 +20,7 @@ import com.runpt.back.user.entity.BatteryEntity;
 import com.runpt.back.global.helper.NaverOauthHelper;
 import com.runpt.back.user.entity.RunningSessionEntity;
 import com.runpt.back.user.entity.TierEntity;
+import com.runpt.back.user.dto.request.AddUserRequestDto;
 import com.runpt.back.user.dto.request.BatteryToAiRequestDto;
 import com.runpt.back.user.dto.request.GetMyPageRequestDto;
 import com.runpt.back.user.dto.request.JoinRequestDto;
@@ -29,6 +29,7 @@ import com.runpt.back.user.dto.request.NaverLoginRequestDto;
 import com.runpt.back.user.dto.request.SaveRunningRequestDto;
 import com.runpt.back.user.dto.request.RunningToAIRequestDto;
 
+import com.runpt.back.user.dto.response.AddUserResponseDto;
 import com.runpt.back.user.dto.response.GetMyPageResponseDto;
 import com.runpt.back.user.dto.response.JoinResponseDto;
 import com.runpt.back.user.dto.response.KakaoLoginResponseDto;
@@ -438,6 +439,60 @@ public class UserServiceImplements implements UserService {
         } catch (Exception e) {
             System.out.println("===== [AI BATTERY ERROR OCCURRED] =====");
             System.out.println("ERROR: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public ResponseEntity<? super AddUserResponseDto> addUser(AddUserRequestDto dto) {
+        try {
+            UserEntity user = userRepository.findById(dto.getUid())
+                    .orElse(null);
+            
+            if (user == null) {
+                return AddUserResponseDto.userNotExists();
+            }
+
+            // DB에 사용자 정보 저장 (업데이트)
+            user.setAge(dto.getAge());
+            user.setHeight(dto.getHeight());
+            user.setWeight(dto.getWeight());
+            userRepository.save(user);
+
+            // AI로 사용자 정보 전송
+            sendUserToAI(dto.getUid(), dto.getAge(), dto.getHeight(), dto.getWeight());
+
+            return AddUserResponseDto.success();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseDto.databaseError();
+        }
+    }
+
+    private void sendUserToAI(Long uid, Integer age, Integer height, Integer weight) {
+        try {
+            String url = "http://13.124.197.160:8000/add-user";
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+
+            java.util.Map<String, Object> aiRequest = new java.util.HashMap<>();
+            aiRequest.put("user_id", uid.intValue());
+            aiRequest.put("age", age);
+            aiRequest.put("height", height);
+            aiRequest.put("weight", weight);
+
+            HttpEntity<java.util.Map<String, Object>> entity = new HttpEntity<>(aiRequest, headers);
+            RestTemplate rt = new RestTemplate();
+
+            ResponseEntity<String> response = rt.postForEntity(url, entity, String.class);
+
+            System.out.println("[AI ADD USER SEND] STATUS → " + response.getStatusCode());
+            System.out.println("[AI ADD USER SEND] RESPONSE → " + response.getBody());
+
+        } catch (Exception e) {
+            System.out.println("[AI ADD USER SEND] ERROR: " + e.getMessage());
             e.printStackTrace();
         }
     }
