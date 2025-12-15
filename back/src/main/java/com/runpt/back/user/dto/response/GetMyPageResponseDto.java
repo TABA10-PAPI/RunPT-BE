@@ -20,15 +20,96 @@ import lombok.Setter;
 @Getter
 @NoArgsConstructor
 public class GetMyPageResponseDto extends ResponseDto{
-    UserEntity user;
-    TierEntity tier;
-    List<RunningSessionEntity> recentRecords;
+    
+    private UserInfo user;
+    private TierInfo tier;
+    private List<RunningSessionInfo> recentRecords;
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    public static class UserInfo {
+        private Long id;
+        private String oauthProvider;
+        private String oauthUid;
+        private String nickname;
+        private Integer age;
+        private Integer height;
+        private Integer weight;
+        private String gender;
+
+        public UserInfo(UserEntity user) {
+            if (user != null) {
+                this.id = user.getId();
+                this.oauthProvider = user.getOauthProvider();
+                this.oauthUid = user.getOauthUid();
+                this.nickname = user.getNickname();
+                this.age = user.getAge();
+                this.height = user.getHeight();
+                this.weight = user.getWeight();
+                this.gender = user.getGender();
+            }
+        }
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    public static class TierInfo {
+        private Long id;
+        private Long uid;
+        private String km3;
+        private String km5;
+        private String km10;
+        private String half;
+        private String full;
+        private java.time.LocalDateTime updatedAt;
+
+        public TierInfo(TierEntity tier) {
+            if (tier != null) {
+                this.id = tier.getId();
+                this.uid = tier.getUser() != null ? tier.getUser().getId() : null;
+                this.km3 = tier.getKm3();
+                this.km5 = tier.getKm5();
+                this.km10 = tier.getKm10();
+                this.half = tier.getHalf();
+                this.full = tier.getFull();
+                this.updatedAt = tier.getUpdatedAt();
+            }
+        }
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    public static class RunningSessionInfo {
+        private Long id;
+        private Long uid;
+        private int pace;
+        private int distance;
+        private int durationSec;
+        private int heartRateAvg;
+        private java.time.LocalDateTime date;
+
+        public RunningSessionInfo(RunningSessionEntity session) {
+            if (session != null) {
+                this.id = session.getId();
+                this.uid = session.getUser() != null ? session.getUser().getId() : null;
+                this.pace = session.getPace();
+                this.distance = session.getDistance();
+                this.durationSec = session.getDurationSec();
+                this.heartRateAvg = session.getHeartRateAvg();
+                this.date = session.getDate();
+            }
+        }
+    }
 
     public GetMyPageResponseDto(UserEntity user, TierEntity tier, List<RunningSessionEntity> records) {
         super();
-        this.user = user;
-        this.tier = tier;
-        this.recentRecords = records;
+        this.user = new UserInfo(user);
+        this.tier = tier != null ? new TierInfo(tier) : null;
+        this.recentRecords = records != null ? 
+            records.stream().map(RunningSessionInfo::new).toList() : null;
     }
 
     public static ResponseEntity<GetMyPageResponseDto> getMyPageSuccess(UserEntity user, TierEntity tier, List<RunningSessionEntity> records) {

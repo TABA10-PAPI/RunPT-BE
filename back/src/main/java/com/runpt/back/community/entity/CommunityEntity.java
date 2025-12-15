@@ -7,7 +7,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import com.runpt.back.community.dto.request.*;
 import com.runpt.back.user.entity.UserEntity;
 
-
+import java.util.List;
 import java.time.LocalDateTime;
 
 @Entity
@@ -36,7 +36,14 @@ public class CommunityEntity {
 
     private int participateuser;
 
-    private Long commentCount;
+    @Column(nullable = false, columnDefinition = "BIGINT DEFAULT 0")
+    private long commentCount;
+
+    @OneToMany(mappedBy = "community", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<CommentEntity> comments;
+
+    @OneToMany(mappedBy = "community", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<ParticipateEntity> participates;
 
     @CreationTimestamp
     private LocalDateTime createAt;
@@ -52,6 +59,7 @@ public class CommunityEntity {
         this.shortinfo = dto.getShortinfo();
         this.tier = tier;
         this.participateuser = 0;
+        this.commentCount = 0;
         this.createAt = time;
     }
 
@@ -71,5 +79,15 @@ public class CommunityEntity {
 
     public void decreaseParticipant(){
         this.participateuser -= 1;
+    }
+
+    public void increaseCommentCount(){
+        this.commentCount += 1;
+    }
+
+    public void decreaseCommentCount(){
+        if (this.commentCount > 0) {
+            this.commentCount -= 1;
+        }
     }
 }

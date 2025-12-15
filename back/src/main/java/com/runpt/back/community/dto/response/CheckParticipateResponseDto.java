@@ -10,7 +10,7 @@ import com.runpt.back.global.dto.ResponseDto;
 import com.runpt.back.community.common.CommunityResponseCode;
 import com.runpt.back.community.common.CommunityResponseMessage;
 
-import lombok.AllArgsConstructor;
+
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -18,9 +18,37 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-@AllArgsConstructor
 public class CheckParticipateResponseDto extends ResponseDto{
-    List<ParticipateEntity> participates;
+    
+    private List<ParticipateInfo> participates;
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    public static class ParticipateInfo {
+        private Long id;
+        private Long uid;
+        private Long communityid;
+        private String nickname;
+        private String tier;
+
+        public ParticipateInfo(ParticipateEntity participate) {
+            if (participate != null) {
+                this.id = participate.getId();
+                this.uid = participate.getUser() != null ? participate.getUser().getId() : null;
+                this.communityid = participate.getCommunity() != null ? participate.getCommunity().getId() : null;
+                this.nickname = participate.getCommunity() != null && participate.getCommunity().getUser() != null 
+                    ? participate.getCommunity().getUser().getNickname() : null;
+                this.tier = participate.getCommunity() != null ? participate.getCommunity().getTier() : null;
+            }
+        }
+    }
+
+    public CheckParticipateResponseDto(List<ParticipateEntity> participates) {
+        super();
+        this.participates = participates != null ? 
+            participates.stream().map(ParticipateInfo::new).toList() : null;
+    }
 
     public static ResponseEntity<? super CheckParticipateResponseDto> success(List<ParticipateEntity> participates){
         CheckParticipateResponseDto responseBody = new CheckParticipateResponseDto(participates);
