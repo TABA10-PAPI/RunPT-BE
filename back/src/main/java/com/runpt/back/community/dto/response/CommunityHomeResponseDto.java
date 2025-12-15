@@ -28,6 +28,8 @@ public class CommunityHomeResponseDto extends ResponseDto{
     public static class CommunityInfo {
         private Long id;
         private Long uid;
+        private String nickname;
+        private String gender;
         private String title;
         private String startpoint;
         private int distance;
@@ -44,6 +46,8 @@ public class CommunityHomeResponseDto extends ResponseDto{
             if (community != null) {
                 this.id = community.getId();
                 this.uid = community.getUser() != null ? community.getUser().getId() : null;
+                this.nickname = community.getUser() != null ? community.getUser().getNickname() : null;
+                this.gender = community.getUser() != null ? community.getUser().getGender() : null;
                 this.title = community.getTitle();
                 this.startpoint = community.getStartpoint();
                 this.distance = community.getDistance();
