@@ -11,4 +11,5 @@ public interface UserService {
     ResponseEntity<? super JoinResponseDto> join(JoinRequestDto dto);
     ResponseEntity<? super GetMyPageResponseDto> getMyPage(GetMyPageRequestDto dto);
     ResponseEntity<? super SaveRunningResponseDto> saveRunning(SaveRunningRequestDto dto);
+    ResponseEntity<? super AddUserResponseDto> addUser(AddUserRequestDto dto);
 }

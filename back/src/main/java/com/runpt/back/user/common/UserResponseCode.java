@@ -3,6 +3,7 @@ package com.runpt.back.user.common;
 import com.runpt.back.global.common.ResponseCode;
 
 public interface UserResponseCode extends ResponseCode {
+    String UID_NOT_EXIST = "UNE";
     String USER_NOT_EXISTS = "UNE";
     String ENTITY_NOT_FOUND = "ENF";
     String CERTIFICATION_FAIL = "CF";

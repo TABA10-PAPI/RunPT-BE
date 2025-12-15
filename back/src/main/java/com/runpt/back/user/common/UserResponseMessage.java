@@ -3,6 +3,7 @@ package com.runpt.back.user.common;
 import com.runpt.back.global.common.ResponseMessage;
 
 public interface UserResponseMessage extends ResponseMessage{
+    String UID_NOT_EXIST = "UID does not exist.";
     String USER_NOT_EXISTS = "user is not exists";
     String DUPLICATE_ID = "duplicate id";
     String ENTITY_NOT_FOUND = "entity not found";
