@@ -30,6 +30,7 @@ public class HomeResponseDto extends ResponseDto {
     @NoArgsConstructor
     public static class BatteryInfo {
         private Long id;
+        private Long uid;
         private String date;
         private String feedback;
         private String reason;
@@ -39,6 +40,7 @@ public class HomeResponseDto extends ResponseDto {
         public BatteryInfo(BatteryEntity battery) {
             if (battery != null) {
                 this.id = battery.getId();
+                this.uid = battery.getUser() != null ? battery.getUser().getId() : null;
                 this.date = battery.getDate();
                 this.feedback = battery.getFeedback();
                 this.reason = battery.getReason();
