@@ -99,6 +99,7 @@ jobs:
               docker rm ${CONTAINER_NAME}
             fi
             
+            
             # 새 이미지로 컨테이너 실행 (DB 환경 변수 안전하게 주입)
             echo "Running new ${CONTAINER_NAME} container with DB Secrets..."
             # -e 옵션을 사용하여 GitHub Secrets에 저장된 DB 정보를 전달
