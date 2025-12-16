@@ -304,9 +304,7 @@ public class UserServiceImplements implements UserService {
                 Tier oldTier = Tier.valueOf(oldRank);
 
                 // UNRANKED 는 항상 새로운 티어보다 낮으므로 그대로 비교 가능
-                boolean isBetter =
-                        TierCalculator.getTierPriority(newTier) >
-                        TierCalculator.getTierPriority(oldTier);
+                boolean isBetter = (TierCalculator.getTierPriority(newTier) > TierCalculator.getTierPriority(oldTier));
                         
                 if (isBetter) {
                     switch (category) {
