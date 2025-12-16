@@ -2,6 +2,8 @@ package com.runpt.back.user.entity;
 
 import java.time.LocalDateTime;
 
+import com.runpt.back.user.util.TierCalculator.Tier;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -51,12 +53,11 @@ public class TierEntity {
 
     public TierEntity(UserEntity user) {
         this.user = user;
-        this.km3 = null;
-        this.km5 = null;
-        this.km10 = null;
-        this.half = null;
-        this.full = null;
-        this.updatedAt = LocalDateTime.now();
+        this.km3 = Tier.UNRANKED.name();
+        this.km5 = Tier.UNRANKED.name();
+        this.km10 = Tier.UNRANKED.name();
+        this.half = Tier.UNRANKED.name();
+        this.full = Tier.UNRANKED.name();
     }
 
     @PreUpdate

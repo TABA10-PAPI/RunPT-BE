@@ -43,6 +43,7 @@ import com.runpt.back.user.repository.BatteryRepository;
 import com.runpt.back.user.repository.RunningSessionRepository;
 import com.runpt.back.user.service.UserService;
 import com.runpt.back.user.util.TierCalculator;
+import com.runpt.back.user.util.TierCalculator.Tier;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -297,13 +298,16 @@ public class UserServiceImplements implements UserService {
                     case "KM10" -> tier.getKm10();
                     case "HALF" -> tier.getHalf();
                     case "FULL" -> tier.getFull();
-                    default -> null;
+                    default -> Tier.UNRANKED.name();
                 };
 
-                boolean isBetter = (oldRank == null) ||
-                        (TierCalculator.getTierPriority(newTier) >
-                         TierCalculator.getTierPriority(TierCalculator.Tier.valueOf(oldRank)));
+                Tier oldTier = Tier.valueOf(oldRank);
 
+                // UNRANKED 는 항상 새로운 티어보다 낮으므로 그대로 비교 가능
+                boolean isBetter =
+                        TierCalculator.getTierPriority(newTier) >
+                        TierCalculator.getTierPriority(oldTier);
+                        
                 if (isBetter) {
                     switch (category) {
                         case "KM3" -> tier.setKm3(newTier.name());

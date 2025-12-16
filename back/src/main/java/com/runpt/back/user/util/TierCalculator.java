@@ -8,8 +8,8 @@ import com.runpt.back.user.entity.TierEntity;
 import lombok.Getter;
 
 public class TierCalculator {
-
     public enum Tier {
+        UNRANKED("언랭크"),
         BRONZE("브론즈"),
         SILVER("실버"),
         GOLD("골드"),
@@ -25,7 +25,6 @@ public class TierCalculator {
             this.koreanName = koreanName;
         }
     }
-
     /** 단거리 3/5/10km: pace = 1km당 초 */
     public static Tier calculateShortDistanceTier(int paceSec) {
         if (paceSec <= 0) return Tier.BRONZE;
@@ -54,19 +53,20 @@ public class TierCalculator {
 
     public static int getTierPriority(Tier tier) {
         return switch (tier) {
-            case BRONZE -> 1;
-            case SILVER -> 2;
-            case GOLD -> 3;
-            case PLATINUM -> 4;
-            case DIAMOND -> 5;
-            case MASTER -> 6;
-            case CHALLENGER -> 7;
+            case UNRANKED -> 1;
+            case BRONZE -> 2;
+            case SILVER -> 3;
+            case GOLD -> 4;
+            case PLATINUM -> 5;
+            case DIAMOND -> 6;
+            case MASTER -> 7;
+            case CHALLENGER -> 8;
         };
     }
 
     public static String calculateHighestTier(TierEntity entity, int latestDistance) {
         if (entity == null || latestDistance < 3000) {
-            return "UNRANKED";
+            return Tier.UNRANKED.name();
         }
 
         String[] tierStrings = {
@@ -76,21 +76,23 @@ public class TierCalculator {
             entity.getHalf(),
             entity.getFull()
         };
-    
+
         List<Tier> tierList = new ArrayList<>();
+
         for (String s : tierStrings) {
-            if (s != null) {            
-                tierList.add(Tier.valueOf(s));
+            if (s != null && !s.isEmpty()) {
+                tierList.add(Tier.valueOf(s));  // UNRANKED도 정상 처리됨
             }
         }
-    
+
         if (tierList.isEmpty()) {
-            return "UNRANKED";
+            return Tier.UNRANKED.name();
         }
+
         Tier highestTier = tierList.stream()
                 .max(Comparator.comparing(TierCalculator::getTierPriority))
-                .orElse(Tier.BRONZE);
-    
+                .orElse(Tier.UNRANKED);
+
         return highestTier.name();
     }
 }
