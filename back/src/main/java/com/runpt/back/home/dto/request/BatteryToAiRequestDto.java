@@ -1,4 +1,4 @@
-package com.runpt.back.user.dto.request;
+package com.runpt.back.home.dto.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -9,3 +9,4 @@ public class BatteryToAiRequestDto {
     private long user_id;
     private String date;
 }
+
