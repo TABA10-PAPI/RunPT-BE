@@ -32,25 +32,23 @@ public class CheckParticipateResponseDto extends ResponseDto{
         private String nickname;
         private String tier;
 
-        public ParticipateInfo(ParticipateEntity participate) {
+        public ParticipateInfo(ParticipateEntity participate, String tier) {
             if (participate != null) {
                 this.id = participate.getId();
                 this.uid = participate.getUser() != null ? participate.getUser().getId() : null;
                 this.communityid = participate.getCommunity() != null ? participate.getCommunity().getId() : null;
-                this.nickname = participate.getCommunity() != null && participate.getCommunity().getUser() != null 
-                    ? participate.getCommunity().getUser().getNickname() : null;
-                this.tier = participate.getCommunity() != null ? participate.getCommunity().getTier() : null;
+                this.nickname = participate.getUser() != null ? participate.getUser().getNickname() : null;
+                this.tier = tier;
             }
         }
     }
 
-    public CheckParticipateResponseDto(List<ParticipateEntity> participates) {
+    public CheckParticipateResponseDto(List<ParticipateInfo> participates) {
         super();
-        this.participates = participates != null ? 
-            participates.stream().map(ParticipateInfo::new).toList() : null;
+        this.participates = participates;
     }
 
-    public static ResponseEntity<? super CheckParticipateResponseDto> success(List<ParticipateEntity> participates){
+    public static ResponseEntity<? super CheckParticipateResponseDto> success(List<ParticipateInfo> participates){
         CheckParticipateResponseDto responseBody = new CheckParticipateResponseDto(participates);
         return ResponseEntity.status(HttpStatus.OK).body(responseBody);
     }
