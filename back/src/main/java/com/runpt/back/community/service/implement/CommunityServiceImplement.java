@@ -330,17 +330,34 @@ public class CommunityServiceImplement implements CommunityService {
     public ResponseEntity<? super CheckParticipateResponseDto> checkparticipate(CheckParticipateRequestDto dto) {
         Long communityid = dto.getCommunityid();
         List<ParticipateEntity> participates = null;
+        List<CheckParticipateResponseDto.ParticipateInfo> participateInfoList = null;
         try {
             if (communityid == null || communityid <= 0) {
             return CheckParticipateResponseDto.invalidId();
             }
             participates = participaterepository.findByCommunity_Id(communityid);
 
+            // 참가자들의 티어 조회 및 ParticipateInfo 생성
+                participateInfoList = participates.stream()
+                        .filter(participate -> participate.getUser() != null)
+                        .map(participate -> {
+                            Long uid = participate.getUser().getId();
+
+                            int distance = runningSessionRepository.findTop1ByUser_IdOrderByDateDesc(uid)
+                                    .map(RunningSessionEntity::getDistance)
+                                    .orElse(0);
+                            TierEntity tierEntity = tierRepository.findByUser_Id(uid);
+                            String tier = TierCalculator.calculateHighestTier(tierEntity, distance);
+
+                            return new CheckParticipateResponseDto.ParticipateInfo(participate, tier);
+                        })
+                        .toList();
+
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseDto.databaseError();
         }
-        return CheckParticipateResponseDto.success(participates);
+        return CheckParticipateResponseDto.success(participateInfoList);
     }
 
     @Transactional
