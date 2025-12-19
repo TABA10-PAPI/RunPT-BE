@@ -46,11 +46,19 @@ public class HomeServiceImplement implements HomeService {
         BatteryEntity battery = null;
         TierEntity tier = null;
         List<RunningSessionEntity> last7daysRuns = null;
-        
+
         try {
 
             if (uid == null) return HomeResponseDto.uidNotExists();
             if (date == null || date.isBlank()) return HomeResponseDto.dateNotExists();
+
+            
+            Boolean exists = batteryRepository.existsByUser_IdAndDate(uid, date);
+
+            if(exists = false){
+                
+            }
+            
 
             // 1) user table → nickname
             UserEntity user = userRepository.findById(uid).orElse(null);
@@ -60,11 +68,12 @@ public class HomeServiceImplement implements HomeService {
             nickname = user.getNickname();
 
             //battter정보 최신화
-            getBatteryInfo(uid, date);
-
+            if(exists = false){
+                getBatteryInfo(uid, date);
+            }
+        
             // 2) battery table → batteryvalue + recommendationsJson
             battery = batteryRepository.findByUser_Id(uid);
-
 
             if (battery == null) return HomeResponseDto.batteryNotFound();
 

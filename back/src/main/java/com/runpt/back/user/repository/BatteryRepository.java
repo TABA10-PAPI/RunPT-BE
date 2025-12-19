@@ -10,4 +10,5 @@ public interface BatteryRepository extends JpaRepository<BatteryEntity, Long> {
 
     Optional<BatteryEntity> findByUser_IdAndDate(Long uid, String date);
     BatteryEntity findByUser_Id(Long uid);
+    boolean existsByUser_IdAndDate(Long uid, String date);
 }
